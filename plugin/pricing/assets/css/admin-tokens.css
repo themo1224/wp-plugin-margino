@@ -1,0 +1,16 @@
+/**
+ * Pricing admin brand tokens (Phase 1.1+).
+ * Enqueued only on Pricing plugin admin screens.
+ */
+
+:root {
+	--pricing-brand: #237227;
+	--pricing-brand-muted: #519A66;
+	--pricing-gold: #FFAA00;
+	--pricing-gold-soft: #FFD786;
+	--pricing-surface: #f7faf7;
+	--pricing-border: #d5e3d8;
+	--pricing-text: #1a2e1c;
+	--pricing-muted-text: #5a6b5c;
+	--pricing-font: "Vazirmatn", Tahoma, sans-serif;
+}

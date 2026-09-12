@@ -1,0 +1,372 @@
+openapi: 3.0.3
+info:
+  title: Pricing WP Connector API (Phase 1)
+  description: |
+    Thin WP↔API surface for Phase 1. Auth is Bearer API key.
+    Notifications, reports, and analyses are out of scope for WordPress;
+    they remain API-owned and are not part of this specification.
+  version: 1.0.0
+
+servers:
+  - url: https://api.pricing.example
+    description: Placeholder host (base URL becomes a WP setting in plan 1.3)
+
+tags:
+  - name: connector
+    description: Phase 1 WordPress connector operations
+
+paths:
+  /v1/connector/validate:
+    post:
+      tags: [connector]
+      operationId: validateConnector
+      summary: Validate API key
+      description: Confirms the key and returns a shop/plan stub.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+            example: {}
+      responses:
+        '200':
+          description: Key valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidateResponse'
+              example:
+                ok: true
+                shop:
+                  id: shop_abc123
+                  name: Example Store
+                plan:
+                  id: plan_starter
+                  status: active
+                  label: Starter
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/connector/products/sync:
+    post:
+      tags: [connector]
+      operationId: syncProducts
+      summary: Sync WooCommerce products
+      description: Upserts store products (external_id, sku, name, price, currency).
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductSyncRequest'
+            example:
+              currency: IRR
+              products:
+                - external_id: '42'
+                  sku: SKU-001
+                  name: Sample Product
+                  price: '1500000'
+      responses:
+        '200':
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductSyncResponse'
+              example:
+                synced: 1
+                accepted: ['42']
+                rejected: []
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/connector/products/{external_id}/recommendation:
+    get:
+      tags: [connector]
+      operationId: getRecommendation
+      summary: Get recommended price
+      description: Returns recommended price and floor flags for one synced product.
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ExternalId'
+      responses:
+        '200':
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecommendationResponse'
+              example:
+                external_id: '42'
+                recommended_price: '1450000'
+                currency: IRR
+                below_floor: false
+                floor_price: '1200000'
+                updated_at: '2026-09-07T12:00:00Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Product not known to the API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+  /v1/connector/products/{external_id}/applied:
+    post:
+      tags: [connector]
+      operationId: acknowledgeAppliedPrice
+      summary: Acknowledge applied price
+      description: Tells the API which price WP applied (manual Phase 1).
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ExternalId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppliedRequest'
+            example:
+              applied_price: '1450000'
+              currency: IRR
+              source: manual
+              applied_at: '2026-09-07T12:05:00Z'
+      responses:
+        '200':
+          description: Acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppliedResponse'
+              example:
+                ok: true
+                external_id: '42'
+                applied_price: '1450000'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Product not known to the API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: api_key
+      description: Authorization Bearer API key issued by Pricing SaaS
+
+  parameters:
+    ExternalId:
+      name: external_id
+      in: path
+      required: true
+      description: WooCommerce product ID as string
+      schema:
+        type: string
+      example: '42'
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: invalid_api_key
+              message: Human-readable explanation.
+    Forbidden:
+      description: Key valid but shop or plan inactive
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: plan_inactive
+              message: Human-readable explanation.
+    UnprocessableEntity:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: validation_error
+              message: Human-readable explanation.
+
+  schemas:
+    ErrorBody:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+
+    ValidateResponse:
+      type: object
+      required: [ok, shop, plan]
+      properties:
+        ok:
+          type: boolean
+        shop:
+          type: object
+          required: [id, name]
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+        plan:
+          type: object
+          required: [id, status, label]
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+              enum: [active, inactive, past_due]
+            label:
+              type: string
+
+    ProductSyncItem:
+      type: object
+      required: [external_id, name, price]
+      properties:
+        external_id:
+          type: string
+        sku:
+          type: string
+          nullable: true
+        name:
+          type: string
+        price:
+          type: string
+          description: Non-negative decimal string
+
+    ProductSyncRequest:
+      type: object
+      required: [currency, products]
+      properties:
+        currency:
+          type: string
+        products:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSyncItem'
+
+    ProductSyncRejected:
+      type: object
+      required: [external_id, code, message]
+      properties:
+        external_id:
+          type: string
+        code:
+          type: string
+        message:
+          type: string
+
+    ProductSyncResponse:
+      type: object
+      required: [synced, accepted, rejected]
+      properties:
+        synced:
+          type: integer
+        accepted:
+          type: array
+          items:
+            type: string
+        rejected:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductSyncRejected'
+
+    RecommendationResponse:
+      type: object
+      required:
+        - external_id
+        - recommended_price
+        - currency
+        - below_floor
+        - updated_at
+      properties:
+        external_id:
+          type: string
+        recommended_price:
+          type: string
+        currency:
+          type: string
+        below_floor:
+          type: boolean
+        floor_price:
+          type: string
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+
+    AppliedRequest:
+      type: object
+      required: [applied_price, currency, source, applied_at]
+      properties:
+        applied_price:
+          type: string
+        currency:
+          type: string
+        source:
+          type: string
+          enum: [manual]
+        applied_at:
+          type: string
+          format: date-time
+
+    AppliedResponse:
+      type: object
+      required: [ok, external_id, applied_price]
+      properties:
+        ok:
+          type: boolean
+        external_id:
+          type: string
+        applied_price:
+          type: string
