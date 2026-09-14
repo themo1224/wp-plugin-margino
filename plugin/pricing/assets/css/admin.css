@@ -124,12 +124,28 @@
 	border-radius: 8px;
 }
 
+.pricing-admin__status.is-connected {
+	border-right-color: var(--pricing-brand);
+}
+
+.pricing-admin__status.is-disconnected {
+	border-right-color: var(--pricing-gold);
+}
+
 .pricing-admin__status-dot {
 	width: 0.55rem;
 	height: 0.55rem;
 	border-radius: 50%;
 	background: var(--pricing-gold);
 	flex-shrink: 0;
+}
+
+.pricing-admin__status.is-connected .pricing-admin__status-dot {
+	background: var(--pricing-brand);
+}
+
+.pricing-admin__status.is-disconnected .pricing-admin__status-dot {
+	background: var(--pricing-gold);
 }
 
 .pricing-admin__status-label {
@@ -191,7 +207,92 @@
 	color: var(--pricing-muted-text);
 }
 
-/* Reserved for later forms (1.3+) — brand button look without using yet */
+.pricing-admin__form {
+	margin: 0;
+	max-width: 32rem;
+}
+
+.pricing-admin__form--disconnect {
+	margin-top: 1.25rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--pricing-border);
+}
+
+.pricing-admin__field {
+	margin: 0 0 1rem;
+}
+
+.pricing-admin__label {
+	display: block;
+	margin-bottom: 0.4rem;
+	font-weight: 600;
+	font-size: 0.9rem;
+	color: var(--pricing-text);
+}
+
+.pricing-admin__input {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+	padding: 0.45rem 0.65rem;
+	border: 1px solid var(--pricing-border);
+	border-radius: 8px;
+	font-family: inherit;
+	font-size: 0.95rem;
+	direction: ltr;
+	text-align: left;
+}
+
+.pricing-admin__input:focus {
+	border-color: var(--pricing-brand-muted);
+	outline: 2px solid var(--pricing-gold-soft);
+	outline-offset: 1px;
+}
+
+.pricing-admin__field-hint {
+	margin: 0.35rem 0 0;
+	font-size: 0.85rem;
+	color: var(--pricing-muted-text);
+}
+
+.pricing-admin__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	margin-top: 0.25rem;
+}
+
+.pricing-admin__sync-summary {
+	margin-top: 1.5rem;
+	padding-top: 1.25rem;
+	border-top: 1px solid var(--pricing-border);
+}
+
+.pricing-admin__sync-summary-title {
+	margin: 0 0 0.5rem;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--pricing-text);
+}
+
+.pricing-admin__sync-stats {
+	margin: 0.5rem 0 0;
+	padding: 0 1.25rem 0 0;
+	list-style: disc;
+}
+
+.pricing-admin__sync-stats li {
+	padding: 0.2rem 0;
+	font-size: 0.9rem;
+	color: var(--pricing-muted-text);
+}
+
+.pricing-admin__sync-warning {
+	margin: 0.75rem 0 0;
+	font-size: 0.9rem;
+	color: var(--pricing-text);
+}
+
 .pricing-admin .button-primary,
 .pricing-admin .pricing-admin__btn-primary {
 	background: var(--pricing-brand) !important;

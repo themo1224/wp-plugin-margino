@@ -50,6 +50,9 @@ class Pricing_Plugin {
 			return;
 		}
 
+		Pricing_Connection::register_hooks();
+		Pricing_Product_Sync::register_hooks();
+
 		$admin_menu = new Pricing_Admin_Menu();
 		$admin_menu->register();
 	}
