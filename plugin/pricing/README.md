@@ -1,6 +1,6 @@
 # Pricing (WordPress / WooCommerce connector)
 
-Phase 1.5: RTL admin shell + API key connect + product sync via `POST /connector/products/sync`. No recommendations or price apply yet.
+Phase 1.6: RTL admin shell + API key connect + product sync + recommended prices UI. No price apply yet (1.7).
 
 Contract: [`docs/contracts/wp-api-v1.md`](../../docs/contracts/wp-api-v1.md)
 
@@ -8,7 +8,7 @@ Contract: [`docs/contracts/wp-api-v1.md`](../../docs/contracts/wp-api-v1.md)
 
 - Function / option / hook prefix: `pricing_`
 - Text domain: `pricing`
-- Version: `0.3.0`
+- Version: `0.4.0`
 
 ## Local connect smoke test
 
@@ -39,7 +39,18 @@ Steps:
 6. Disconnect → Products shows CTA to Connection (no sync button).
 7. Drafts and variation children are not sent as separate rows.
 
-This slice calls `POST {base}/connector/validate` (connect) and `POST {base}/connector/products/sync` (sync only). Recommendations / apply arrive in later plans.
+## Local recommendations smoke test
+
+1. Stay **متصل** and sync at least once.
+2. Open **Pricing → محصولات** → panel **قیمت‌های پیشنهادی**.
+3. Expect a table: name, current price, recommended price, currency, updated time, status.
+4. Stub engine: recommended price matches the synced store price; status **آماده**.
+5. Create a new published WC product **without** syncing → row status **همگام‌سازی نشده** (no fatal).
+6. With 21+ published products, use **قبلی / بعدی** — page 2 loads only that page’s recommendations.
+7. Stop the API → page shows an unreachable error notice; admin does not fatal.
+8. Confirm there is **no Apply button** and WooCommerce prices are unchanged.
+
+This slice calls `POST {base}/connector/validate`, `POST {base}/connector/products/sync`, and `GET {base}/connector/products/{id}/recommendation`. Manual apply arrives in plan 1.7.
 
 ## Layout
 
@@ -51,6 +62,7 @@ includes/
   class-http-client.php
   class-connection.php
   class-product-sync.php
+  class-recommendations.php
   class-admin-menu.php
   class-admin-pages.php
 assets/

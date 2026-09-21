@@ -30,7 +30,7 @@
 .pricing-admin {
 	font-family: var(--pricing-font);
 	color: var(--pricing-text);
-	max-width: 960px;
+	max-width: 1100px;
 	margin-top: 1rem;
 }
 
@@ -291,6 +291,61 @@
 	margin: 0.75rem 0 0;
 	font-size: 0.9rem;
 	color: var(--pricing-text);
+}
+
+.pricing-admin__panel--recs {
+	margin-top: 1.25rem;
+}
+
+.pricing-admin__recs-wrap {
+	overflow-x: auto;
+	margin-top: 0.5rem;
+}
+
+.pricing-admin__recs-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.9rem;
+}
+
+.pricing-admin__recs-table th,
+.pricing-admin__recs-table td {
+	padding: 0.65rem 0.75rem;
+	border-bottom: 1px solid var(--pricing-border);
+	text-align: right;
+	vertical-align: middle;
+}
+
+.pricing-admin__recs-table th {
+	font-weight: 600;
+	color: var(--pricing-text);
+	background: var(--pricing-surface);
+}
+
+.pricing-admin__recs-table tbody tr:hover td {
+	background: #fafcfa;
+}
+
+.pricing-admin__recs-name {
+	font-weight: 500;
+	max-width: 16rem;
+}
+
+.pricing-admin__recs-badge {
+	display: inline-block;
+	margin-right: 0.35rem;
+	padding: 0.1rem 0.45rem;
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--pricing-muted-text);
+	background: var(--pricing-gold-soft);
+	border-radius: 4px;
+}
+
+.pricing-admin__recs-pagination {
+	margin-top: 1rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--pricing-border);
 }
 
 .pricing-admin .button-primary,

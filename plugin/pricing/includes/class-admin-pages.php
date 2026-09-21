@@ -39,7 +39,7 @@ class Pricing_Admin_Pages {
 	}
 
 	/**
-	 * Products page (sync catalog; recommendations in 1.6+).
+	 * Products page (sync catalog + recommended prices).
 	 *
 	 * @return void
 	 */
@@ -269,7 +269,7 @@ class Pricing_Admin_Pages {
 	}
 
 	/**
-	 * Products: sync gate + button + last result (no product table).
+	 * Products: sync gate + button + last result + recommendations table.
 	 *
 	 * @return void
 	 */
@@ -297,7 +297,7 @@ class Pricing_Admin_Pages {
 
 		echo '<p class="pricing-admin__lead">';
 		echo esc_html__(
-			'محصولات منتشرشده ووکامرس را به سرویس Pricing بفرستید. قیمت پیشنهادی و اعمال قیمت در مراحل بعد می‌آید.',
+			'محصولات منتشرشده ووکامرس را به سرویس Pricing بفرستید، سپس قیمت پیشنهادی را در جدول زیر ببینید.',
 			'pricing'
 		);
 		echo '</p>';
@@ -315,6 +315,219 @@ class Pricing_Admin_Pages {
 		}
 
 		echo '</section>';
+
+		self::render_recommendations_panel();
+	}
+
+	/**
+	 * Paginated recommendations table for published WooCommerce products.
+	 *
+	 * @return void
+	 */
+	private static function render_recommendations_panel() {
+		$per_page = 20;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only pagination.
+		$page = isset( $_GET['pricing_paged'] ) ? max( 1, absint( wp_unslash( $_GET['pricing_paged'] ) ) ) : 1;
+
+		$query = array(
+			'status'   => 'publish',
+			'limit'    => $per_page,
+			'page'     => $page,
+			'paginate' => true,
+			'type'     => array( 'simple', 'variable', 'external', 'grouped' ),
+			'return'   => 'objects',
+		);
+
+		$paged = function_exists( 'wc_get_products' ) ? wc_get_products( $query ) : null;
+
+		$products = array();
+		$total    = 0;
+		$max_pages = 1;
+
+		if ( is_object( $paged ) && isset( $paged->products ) && is_array( $paged->products ) ) {
+			$products  = $paged->products;
+			$total     = isset( $paged->total ) ? (int) $paged->total : count( $products );
+			$max_pages = isset( $paged->max_num_pages ) ? max( 1, (int) $paged->max_num_pages ) : 1;
+		} elseif ( is_array( $paged ) ) {
+			// Fallback if paginate is unsupported.
+			$products  = $paged;
+			$total     = count( $products );
+			$max_pages = 1;
+		}
+
+		echo '<section class="pricing-admin__panel pricing-admin__panel--recs">';
+		echo '<h2 class="pricing-admin__panel-title">' . esc_html__( 'قیمت‌های پیشنهادی', 'pricing' ) . '</h2>';
+		echo '<p class="pricing-admin__lead">';
+		echo esc_html__(
+			'قیمت پیشنهادی از سرویس Pricing خوانده می‌شود. اعمال قیمت در مرحله بعد می‌آید.',
+			'pricing'
+		);
+		echo '</p>';
+
+		if ( empty( $products ) ) {
+			echo '<p class="pricing-admin__empty">';
+			echo esc_html__( 'محصول منتشرشده‌ای برای نمایش نیست.', 'pricing' );
+			echo '</p>';
+			echo '</section>';
+			return;
+		}
+
+		$ids = array();
+		foreach ( $products as $product ) {
+			if ( is_object( $product ) && method_exists( $product, 'get_id' ) ) {
+				$ids[] = (string) $product->get_id();
+			}
+		}
+
+		$fetched    = Pricing_Recommendations::fetch_for_products( $ids );
+		$results    = isset( $fetched['results'] ) && is_array( $fetched['results'] ) ? $fetched['results'] : array();
+		$page_error = isset( $fetched['page_error'] ) && is_string( $fetched['page_error'] ) ? $fetched['page_error'] : null;
+
+		if ( null !== $page_error && '' !== $page_error ) {
+			echo '<div class="notice notice-error inline"><p>';
+			echo esc_html( Pricing_Connection::error_message_for_code( $page_error ) );
+			echo '</p></div>';
+		}
+
+		echo '<div class="pricing-admin__recs-wrap">';
+		echo '<table class="pricing-admin__recs-table">';
+		echo '<thead><tr>';
+		echo '<th scope="col">' . esc_html__( 'نام', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'قیمت فعلی', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'قیمت پیشنهادی', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'ارز', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'به‌روزرسانی', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'وضعیت', 'pricing' ) . '</th>';
+		echo '</tr></thead><tbody>';
+
+		foreach ( $products as $product ) {
+			if ( ! is_object( $product ) || ! method_exists( $product, 'get_id' ) ) {
+				continue;
+			}
+
+			$id      = (string) $product->get_id();
+			$name    = method_exists( $product, 'get_name' ) ? (string) $product->get_name() : $id;
+			$current = self::format_store_price( $product );
+			$result  = isset( $results[ $id ] ) && is_array( $results[ $id ] ) ? $results[ $id ] : null;
+
+			$rec_price  = '—';
+			$currency   = '—';
+			$updated    = '—';
+			$status_txt = __( 'نامشخص', 'pricing' );
+			$below      = false;
+
+			if ( is_array( $result ) && ! empty( $result['ok'] ) && is_array( $result['data'] ) ) {
+				$data       = $result['data'];
+				$rec_price  = isset( $data['recommended_price'] ) && '' !== $data['recommended_price']
+					? (string) $data['recommended_price']
+					: '—';
+				$currency   = isset( $data['currency'] ) && '' !== $data['currency']
+					? (string) $data['currency']
+					: '—';
+				$updated    = isset( $data['updated_at'] ) && '' !== $data['updated_at']
+					? (string) $data['updated_at']
+					: '—';
+				$status_txt = __( 'آماده', 'pricing' );
+				$below      = ! empty( $data['below_floor'] );
+			} elseif ( is_array( $result ) && isset( $result['error_code'] ) && 'not_synced' === $result['error_code'] ) {
+				$status_txt = __( 'همگام‌سازی نشده', 'pricing' );
+			} elseif ( is_array( $result ) && ! empty( $result['error_code'] ) ) {
+				$status_txt = __( 'خطا', 'pricing' );
+			}
+
+			echo '<tr>';
+			echo '<td class="pricing-admin__recs-name">' . esc_html( $name ) . '</td>';
+			echo '<td dir="ltr">' . esc_html( $current ) . '</td>';
+			echo '<td dir="ltr">' . esc_html( $rec_price );
+			if ( $below ) {
+				echo ' <span class="pricing-admin__recs-badge">' . esc_html__( 'زیر کف', 'pricing' ) . '</span>';
+			}
+			echo '</td>';
+			echo '<td dir="ltr">' . esc_html( $currency ) . '</td>';
+			echo '<td dir="ltr">' . esc_html( $updated ) . '</td>';
+			echo '<td>' . esc_html( $status_txt ) . '</td>';
+			echo '</tr>';
+		}
+
+		echo '</tbody></table>';
+		echo '</div>';
+
+		if ( $max_pages > 1 ) {
+			self::render_recs_pagination( $page, $max_pages, $total );
+		}
+
+		echo '</section>';
+	}
+
+	/**
+	 * Current store price for table display.
+	 *
+	 * @param object $product WC product.
+	 * @return string
+	 */
+	private static function format_store_price( $product ) {
+		$raw = '';
+
+		if ( method_exists( $product, 'is_type' ) && $product->is_type( 'variable' ) ) {
+			if ( method_exists( $product, 'get_variation_price' ) ) {
+				$raw = (string) $product->get_variation_price( 'min', false );
+			}
+		} elseif ( method_exists( $product, 'get_price' ) ) {
+			$raw = (string) $product->get_price();
+		}
+
+		$raw = trim( $raw );
+		if ( '' === $raw ) {
+			return '—';
+		}
+
+		if ( function_exists( 'wc_format_localized_price' ) ) {
+			$formatted = wc_format_localized_price( $raw );
+			if ( is_string( $formatted ) && '' !== $formatted ) {
+				return $formatted;
+			}
+		}
+
+		return $raw;
+	}
+
+	/**
+	 * Pagination links for recommendations table.
+	 *
+	 * @param int $page      Current page (1-based).
+	 * @param int $max_pages Total pages.
+	 * @param int $total     Total products.
+	 * @return void
+	 */
+	private static function render_recs_pagination( $page, $max_pages, $total ) {
+		$base_url = admin_url( 'admin.php?page=pricing-products' );
+
+		echo '<nav class="pricing-admin__recs-pagination" aria-label="' . esc_attr__( 'صفحه‌بندی محصولات', 'pricing' ) . '">';
+		echo '<p class="pricing-admin__field-hint">';
+		echo esc_html(
+			sprintf(
+				/* translators: 1: current page, 2: total pages, 3: total products */
+				__( 'صفحه %1$d از %2$d — مجموع %3$d محصول', 'pricing' ),
+				(int) $page,
+				(int) $max_pages,
+				(int) $total
+			)
+		);
+		echo '</p>';
+		echo '<div class="pricing-admin__actions">';
+
+		if ( $page > 1 ) {
+			$prev = add_query_arg( 'pricing_paged', (string) ( $page - 1 ), $base_url );
+			echo '<a class="button" href="' . esc_url( $prev ) . '">' . esc_html__( 'قبلی', 'pricing' ) . '</a>';
+		}
+
+		if ( $page < $max_pages ) {
+			$next = add_query_arg( 'pricing_paged', (string) ( $page + 1 ), $base_url );
+			echo '<a class="button" href="' . esc_url( $next ) . '">' . esc_html__( 'بعدی', 'pricing' ) . '</a>';
+		}
+
+		echo '</div>';
+		echo '</nav>';
 	}
 
 	/**
