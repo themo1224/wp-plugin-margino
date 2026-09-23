@@ -1,6 +1,6 @@
 ---
 name: Pricing
-last_updated: 2026-09-03
+last_updated: 2026-09-23
 ---
 
 # Pricing Strategy
@@ -11,7 +11,9 @@ Online sellers who buy and resell goods lose money when costs go up (supplier, d
 
 ## Our approach
 
-We win by turning the seller’s full cost profile plus live rival prices into a safe recommended price — never below cost + margin — and delivering that answer where they sell. WordPress is the first delivery path (plugin as a tool for WooCommerce users only). Instagram and an open API are part of the product vision and shown as coming soon until ready.
+We win by turning the seller’s full cost profile plus live rival prices into a safe recommended price — never below cost + margin — and delivering that answer where they sell. Sellers do the minimum: sync the catalog and enter costs. We find rivals, match products, and refresh prices ourselves. WordPress is the first delivery path (plugin as a tool for WooCommerce users only). Instagram and an open API are part of the product vision and shown as coming soon until ready.
+
+**Recommended price:** cost floor + margin is the hard floor; rival data (when available) shapes the suggest — never below the floor. No AI inventing prices.
 
 ## Who it's for
 
@@ -23,6 +25,7 @@ We win by turning the seller’s full cost profile plus live rival prices into a
 - **Cost profiles completed** - shops that finished a real cost profile
 - **First recommended price** - shops that got at least one recommended price
 - **Price action taken** - shops that changed a price or acted on an alert after a recommendation
+- **Auto-matched rivals** - products with a confident rival link without seller URL entry
 
 ## Tracks
 
@@ -34,9 +37,14 @@ _Why it serves the approach:_ This is the core “never sell blind / never sell 
 
 ### Rival prices
 
-Live competitor prices from Torob/Snapp and Digikala/Basalam listings used as rivals — not as marketplaces we sell into.
+Best UX: sellers never paste rival URLs. After sync, we auto-discover rivals.
 
-_Why it serves the approach:_ Without rival data, the recommended price can’t answer “am I too expensive?”
+- **Price source:** Torob and Snapp (price-comparison aggregators). Marketplace prices (Digikala/Basalam, etc.) show up through those aggregators — we do **not** scrape Digikala/Basalam as a primary path (fragile anti-bot).
+- **Matching:** AI helps search and pick the right listing from catalog fields (name, brand, barcode when present). Confidence-gated auto-link; rare one-tap confirm only when confidence is low — still no URL entry.
+- **Numbers:** scrape/cache aggregator prices on a schedule; AI does not invent rival prices.
+- **Resilience:** stale or missing rivals → still recommend from cost floor; never block the product on scrape failure.
+
+_Why it serves the approach:_ Without rival data, the recommended price can’t answer “am I too expensive?” — and without auto-match, rival UX fails.
 
 ### Delivery channels
 
@@ -52,7 +60,10 @@ _Why it serves the approach:_ Short-path revenue and the right first customers.
 
 ## Not working on
 
-- Digikala / Basalam as *customers* (we don’t manage their marketplace listings; we may scrape them as rivals)
+- Digikala / Basalam as *customers* (we don’t manage their marketplace listings)
+- Direct Digikala / Basalam scraping as the main rival pipeline (aggregators first; no seller URL pasting for rivals)
+- Asking sellers to paste Torob/Snapp/product URLs to enable rivals
+- Using AI as the price authority (AI = matching help only; floor + rules decide recommend)
 - Shipping Instagram automation or the public API as live v1 (coming soon only for now)
 - Restaurant menus, unique game accounts, and other non-SKU categories as first customers
 - Influencer discovery platform
@@ -67,7 +78,7 @@ _Why it serves the approach:_ Short-path revenue and the right first customers.
 
 **One-liner:** قیمت به‌روز از روی هزینه و قیمت روز؛ رقبا زیر نظر — ضرر بی‌خبر، نه.
 
-**Key message:** Promise is keep product prices updated from costs + قیمت روز, plus rival monitoring, so the seller doesn’t lose money even when they’re not watching. Not “raise prices.” WordPress connector exists; don’t put WooCommerce in the first screen. Instagram and API coming soon.
+**Key message:** Promise is keep product prices updated from costs + قیمت روز, plus rival monitoring we run for them (no rival URL chores), so the seller doesn’t lose money even when they’re not watching. Not “raise prices.” WordPress connector exists; don’t put WooCommerce in the first screen. Instagram and API coming soon.
 
 ## Pricing
 
