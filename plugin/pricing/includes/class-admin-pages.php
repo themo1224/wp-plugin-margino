@@ -39,7 +39,7 @@ class Pricing_Admin_Pages {
 	}
 
 	/**
-	 * Products page (sync catalog; recommendations in 1.6+).
+	 * Products page (sync catalog + recommended prices).
 	 *
 	 * @return void
 	 */
@@ -121,7 +121,7 @@ class Pricing_Admin_Pages {
 	}
 
 	/**
-	 * Live connection status from last successful validate.
+	 * Live connection status from last successful validate + last sync hint.
 	 *
 	 * @return void
 	 */
@@ -144,12 +144,34 @@ class Pricing_Admin_Pages {
 			$shop = isset( $status['shop_name'] ) ? (string) $status['shop_name'] : '';
 			$plan = isset( $status['plan_label'] ) ? (string) $status['plan_label'] : '';
 			$hint = trim( $shop . ( '' !== $shop && '' !== $plan ? ' — ' : '' ) . $plan );
+			$sync = self::last_sync_hint_text();
+			if ( '' !== $hint ) {
+				$hint .= ' · ';
+			}
+			$hint .= $sync;
 			echo esc_html( $hint );
 		} else {
 			echo esc_html__( 'برای شروع، کلید API را در صفحه اتصال وارد کنید.', 'pricing' );
 		}
 		echo '</span>';
 		echo '</div>';
+	}
+
+	/**
+	 * Farsi last-sync fragment for strip / overview.
+	 *
+	 * @return string
+	 */
+	private static function last_sync_hint_text() {
+		$last = Pricing_Product_Sync::get_last_sync();
+		if ( ! is_array( $last ) || empty( $last['synced_at'] ) ) {
+			return __( 'هنوز همگام‌سازی نشده', 'pricing' );
+		}
+
+		$at = (string) $last['synced_at'];
+
+		/* translators: %s: UTC timestamp */
+		return sprintf( __( 'آخرین همگام‌سازی: %s UTC', 'pricing' ), $at );
 	}
 
 	/**
@@ -196,6 +218,10 @@ class Pricing_Admin_Pages {
 	 * @return void
 	 */
 	private static function render_overview_body() {
+		$status      = Pricing_Connection::status();
+		$connected   = ! empty( $status['connected'] );
+		$connected_at = isset( $status['connected_at'] ) ? (string) $status['connected_at'] : '';
+
 		echo '<section class="pricing-admin__panel">';
 		echo '<h2 class="pricing-admin__panel-title">' . esc_html__( 'اتصال فروشگاه به Pricing', 'pricing' ) . '</h2>';
 		echo '<p class="pricing-admin__lead">';
@@ -207,7 +233,25 @@ class Pricing_Admin_Pages {
 		echo '<ul class="pricing-admin__steps">';
 		echo '<li>' . esc_html__( '۱. اتصال با کلید API', 'pricing' ) . '</li>';
 		echo '<li>' . esc_html__( '۲. همگام‌سازی محصولات', 'pricing' ) . '</li>';
-		echo '<li>' . esc_html__( '۳. اعمال دستی قیمت پیشنهادی', 'pricing' ) . '</li>';
+		echo '<li>' . esc_html__( '۳. اعمال دستی قیمت پیشنهادی (نه زیر کف قیمت)', 'pricing' ) . '</li>';
+		echo '</ul>';
+		echo '</section>';
+
+		echo '<section class="pricing-admin__panel pricing-admin__panel--status">';
+		echo '<h2 class="pricing-admin__panel-title">' . esc_html__( 'وضعیت فعلی', 'pricing' ) . '</h2>';
+		echo '<ul class="pricing-admin__status-list">';
+		echo '<li>';
+		echo esc_html__( 'اتصال:', 'pricing' ) . ' ';
+		if ( $connected ) {
+			echo esc_html__( 'متصل', 'pricing' );
+			if ( '' !== $connected_at ) {
+				echo ' <span class="pricing-admin__field-hint" dir="ltr">(' . esc_html( $connected_at ) . ' UTC)</span>';
+			}
+		} else {
+			echo esc_html__( 'متصل نیست', 'pricing' );
+		}
+		echo '</li>';
+		echo '<li>' . esc_html( self::last_sync_hint_text() ) . '</li>';
 		echo '</ul>';
 		echo '</section>';
 	}
@@ -269,7 +313,7 @@ class Pricing_Admin_Pages {
 	}
 
 	/**
-	 * Products: sync gate + button + last result (no product table).
+	 * Products: sync gate + button + last result + recommendations table.
 	 *
 	 * @return void
 	 */
@@ -297,7 +341,7 @@ class Pricing_Admin_Pages {
 
 		echo '<p class="pricing-admin__lead">';
 		echo esc_html__(
-			'محصولات منتشرشده ووکامرس را به سرویس Pricing بفرستید. قیمت پیشنهادی و اعمال قیمت در مراحل بعد می‌آید.',
+			'محصولات منتشرشده ووکامرس را به سرویس Pricing بفرستید، سپس قیمت پیشنهادی را در جدول زیر ببینید.',
 			'pricing'
 		);
 		echo '</p>';
@@ -315,10 +359,247 @@ class Pricing_Admin_Pages {
 		}
 
 		echo '</section>';
+
+		self::render_recommendations_panel();
 	}
 
 	/**
-	 * Flash notices from sync redirects.
+	 * Paginated recommendations table for published WooCommerce products.
+	 *
+	 * @return void
+	 */
+	private static function render_recommendations_panel() {
+		$per_page = 20;
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only pagination.
+		$page = isset( $_GET['pricing_paged'] ) ? max( 1, absint( wp_unslash( $_GET['pricing_paged'] ) ) ) : 1;
+
+		$query = array(
+			'status'   => 'publish',
+			'limit'    => $per_page,
+			'page'     => $page,
+			'paginate' => true,
+			'type'     => array( 'simple', 'variable', 'external', 'grouped' ),
+			'return'   => 'objects',
+		);
+
+		$paged = function_exists( 'wc_get_products' ) ? wc_get_products( $query ) : null;
+
+		$products = array();
+		$total    = 0;
+		$max_pages = 1;
+
+		if ( is_object( $paged ) && isset( $paged->products ) && is_array( $paged->products ) ) {
+			$products  = $paged->products;
+			$total     = isset( $paged->total ) ? (int) $paged->total : count( $products );
+			$max_pages = isset( $paged->max_num_pages ) ? max( 1, (int) $paged->max_num_pages ) : 1;
+		} elseif ( is_array( $paged ) ) {
+			// Fallback if paginate is unsupported.
+			$products  = $paged;
+			$total     = count( $products );
+			$max_pages = 1;
+		}
+
+		echo '<section class="pricing-admin__panel pricing-admin__panel--recs">';
+		echo '<h2 class="pricing-admin__panel-title">' . esc_html__( 'قیمت‌های پیشنهادی', 'pricing' ) . '</h2>';
+		echo '<p class="pricing-admin__lead">';
+		echo esc_html__(
+			'قیمت پیشنهادی از سرویس Pricing خوانده می‌شود. برای محصولات ساده می‌توانید قیمت را دستی اعمال کنید؛ اگر قیمت فروشگاه زیر کف باشد، اعمال ممنوع است.',
+			'pricing'
+		);
+		echo '</p>';
+
+		if ( empty( $products ) ) {
+			echo '<p class="pricing-admin__empty">';
+			echo esc_html__( 'محصول منتشرشده‌ای برای نمایش نیست.', 'pricing' );
+			echo '</p>';
+			echo '</section>';
+			return;
+		}
+
+		$ids = array();
+		foreach ( $products as $product ) {
+			if ( is_object( $product ) && method_exists( $product, 'get_id' ) ) {
+				$ids[] = (string) $product->get_id();
+			}
+		}
+
+		$fetched    = Pricing_Recommendations::fetch_for_products( $ids );
+		$results    = isset( $fetched['results'] ) && is_array( $fetched['results'] ) ? $fetched['results'] : array();
+		$page_error = isset( $fetched['page_error'] ) && is_string( $fetched['page_error'] ) ? $fetched['page_error'] : null;
+
+		if ( null !== $page_error && '' !== $page_error ) {
+			echo '<div class="notice notice-error inline"><p>';
+			echo esc_html( Pricing_Connection::error_message_for_code( $page_error ) );
+			echo '</p></div>';
+		}
+
+		echo '<div class="pricing-admin__recs-wrap">';
+		echo '<table class="pricing-admin__recs-table">';
+		echo '<thead><tr>';
+		echo '<th scope="col">' . esc_html__( 'نام', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'قیمت فعلی', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'قیمت پیشنهادی', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'ارز', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'به‌روزرسانی', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'وضعیت', 'pricing' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'عملیات', 'pricing' ) . '</th>';
+		echo '</tr></thead><tbody>';
+
+		$apply_url = admin_url( 'admin-post.php' );
+
+		foreach ( $products as $product ) {
+			if ( ! is_object( $product ) || ! method_exists( $product, 'get_id' ) ) {
+				continue;
+			}
+
+			$id      = (string) $product->get_id();
+			$name    = method_exists( $product, 'get_name' ) ? (string) $product->get_name() : $id;
+			$current = self::format_store_price( $product );
+			$result  = isset( $results[ $id ] ) && is_array( $results[ $id ] ) ? $results[ $id ] : null;
+			$is_simple = method_exists( $product, 'is_type' ) && $product->is_type( 'simple' );
+
+			$rec_price  = '—';
+			$currency   = '—';
+			$updated    = '—';
+			$status_txt = __( 'نامشخص', 'pricing' );
+			$below      = false;
+			$rec_ok     = false;
+
+			if ( is_array( $result ) && ! empty( $result['ok'] ) && is_array( $result['data'] ) ) {
+				$data       = $result['data'];
+				$rec_price  = isset( $data['recommended_price'] ) && '' !== $data['recommended_price']
+					? (string) $data['recommended_price']
+					: '—';
+				$currency   = isset( $data['currency'] ) && '' !== $data['currency']
+					? (string) $data['currency']
+					: '—';
+				$updated    = isset( $data['updated_at'] ) && '' !== $data['updated_at']
+					? (string) $data['updated_at']
+					: '—';
+				$below      = ! empty( $data['below_floor'] );
+				$rec_ok     = ( '—' !== $rec_price );
+				$status_txt = $below ? __( 'زیر کف', 'pricing' ) : __( 'آماده', 'pricing' );
+			} elseif ( is_array( $result ) && isset( $result['error_code'] ) && 'not_synced' === $result['error_code'] ) {
+				$status_txt = __( 'همگام‌سازی نشده', 'pricing' );
+			} elseif ( is_array( $result ) && ! empty( $result['error_code'] ) ) {
+				$status_txt = __( 'خطا', 'pricing' );
+			}
+
+			echo '<tr>';
+			echo '<td class="pricing-admin__recs-name">' . esc_html( $name ) . '</td>';
+			echo '<td dir="ltr">' . esc_html( $current ) . '</td>';
+			echo '<td dir="ltr">' . esc_html( $rec_price );
+			if ( $below ) {
+				echo ' <span class="pricing-admin__recs-badge">' . esc_html__( 'زیر کف', 'pricing' ) . '</span>';
+			}
+			echo '</td>';
+			echo '<td dir="ltr">' . esc_html( $currency ) . '</td>';
+			echo '<td dir="ltr">' . esc_html( $updated ) . '</td>';
+			echo '<td>' . esc_html( $status_txt ) . '</td>';
+			echo '<td class="pricing-admin__recs-actions">';
+
+			if ( $is_simple && $rec_ok && ! $below ) {
+				echo '<form class="pricing-admin__apply-form" method="post" action="' . esc_url( $apply_url ) . '">';
+				echo '<input type="hidden" name="action" value="pricing_apply_price" />';
+				echo '<input type="hidden" name="product_id" value="' . esc_attr( $id ) . '" />';
+				wp_nonce_field( Pricing_Price_Apply::NONCE_ACTION );
+				echo '<button type="submit" class="button button-small">' . esc_html__( 'اعمال قیمت', 'pricing' ) . '</button>';
+				echo '</form>';
+			} elseif ( $is_simple && $rec_ok && $below ) {
+				echo '<span class="pricing-admin__field-hint">' . esc_html__( 'زیر کف — اعمال ممنوع', 'pricing' ) . '</span>';
+			} elseif ( ! $is_simple ) {
+				echo '<span class="pricing-admin__field-hint">' . esc_html__( 'فقط محصول ساده', 'pricing' ) . '</span>';
+			} else {
+				echo '<span class="pricing-admin__field-hint">—</span>';
+			}
+
+			echo '</td>';
+			echo '</tr>';
+		}
+
+		echo '</tbody></table>';
+		echo '</div>';
+
+		if ( $max_pages > 1 ) {
+			self::render_recs_pagination( $page, $max_pages, $total );
+		}
+
+		echo '</section>';
+	}
+
+	/**
+	 * Current store price for table display.
+	 *
+	 * @param object $product WC product.
+	 * @return string
+	 */
+	private static function format_store_price( $product ) {
+		$raw = '';
+
+		if ( method_exists( $product, 'is_type' ) && $product->is_type( 'variable' ) ) {
+			if ( method_exists( $product, 'get_variation_price' ) ) {
+				$raw = (string) $product->get_variation_price( 'min', false );
+			}
+		} elseif ( method_exists( $product, 'get_price' ) ) {
+			$raw = (string) $product->get_price();
+		}
+
+		$raw = trim( $raw );
+		if ( '' === $raw ) {
+			return '—';
+		}
+
+		if ( function_exists( 'wc_format_localized_price' ) ) {
+			$formatted = wc_format_localized_price( $raw );
+			if ( is_string( $formatted ) && '' !== $formatted ) {
+				return $formatted;
+			}
+		}
+
+		return $raw;
+	}
+
+	/**
+	 * Pagination links for recommendations table.
+	 *
+	 * @param int $page      Current page (1-based).
+	 * @param int $max_pages Total pages.
+	 * @param int $total     Total products.
+	 * @return void
+	 */
+	private static function render_recs_pagination( $page, $max_pages, $total ) {
+		$base_url = admin_url( 'admin.php?page=pricing-products' );
+
+		echo '<nav class="pricing-admin__recs-pagination" aria-label="' . esc_attr__( 'صفحه‌بندی محصولات', 'pricing' ) . '">';
+		echo '<p class="pricing-admin__field-hint">';
+		echo esc_html(
+			sprintf(
+				/* translators: 1: current page, 2: total pages, 3: total products */
+				__( 'صفحه %1$d از %2$d — مجموع %3$d محصول', 'pricing' ),
+				(int) $page,
+				(int) $max_pages,
+				(int) $total
+			)
+		);
+		echo '</p>';
+		echo '<div class="pricing-admin__actions">';
+
+		if ( $page > 1 ) {
+			$prev = add_query_arg( 'pricing_paged', (string) ( $page - 1 ), $base_url );
+			echo '<a class="button" href="' . esc_url( $prev ) . '">' . esc_html__( 'قبلی', 'pricing' ) . '</a>';
+		}
+
+		if ( $page < $max_pages ) {
+			$next = add_query_arg( 'pricing_paged', (string) ( $page + 1 ), $base_url );
+			echo '<a class="button" href="' . esc_url( $next ) . '">' . esc_html__( 'بعدی', 'pricing' ) . '</a>';
+		}
+
+		echo '</div>';
+		echo '</nav>';
+	}
+
+	/**
+	 * Flash notices from sync / apply redirects.
 	 *
 	 * @return void
 	 */
@@ -350,6 +631,17 @@ class Pricing_Admin_Pages {
 					$skipped
 				);
 				break;
+			case 'applied':
+				$class = 'notice notice-success is-dismissible';
+				$last  = Pricing_Price_Apply::get_last_apply();
+				$price = is_array( $last ) && isset( $last['applied_price'] ) ? (string) $last['applied_price'] : '';
+				if ( '' !== $price ) {
+					/* translators: %s: applied price */
+					$message = sprintf( __( 'قیمت اعمال شد: %s', 'pricing' ), $price );
+				} else {
+					$message = __( 'قیمت اعمال شد.', 'pricing' );
+				}
+				break;
 			case 'error':
 				$class   = 'notice notice-error is-dismissible';
 				$message = self::products_error_message( $error );
@@ -362,17 +654,30 @@ class Pricing_Admin_Pages {
 	}
 
 	/**
-	 * Farsi error copy for sync failures.
+	 * Farsi error copy for sync / apply failures.
 	 *
 	 * @param string $code Error slug.
 	 * @return string
 	 */
 	private static function products_error_message( $code ) {
-		if ( 'not_connected' === $code ) {
-			return __( 'ابتدا اتصال را برقرار کنید.', 'pricing' );
+		switch ( $code ) {
+			case 'not_connected':
+				return __( 'ابتدا اتصال را برقرار کنید.', 'pricing' );
+			case 'unsupported_type':
+				return __( 'اعمال قیمت فقط برای محصولات ساده پشتیبانی می‌شود.', 'pricing' );
+			case 'invalid_product':
+				return __( 'محصول نامعتبر است.', 'pricing' );
+			case 'not_synced':
+				return __( 'ابتدا محصول را همگام‌سازی کنید.', 'pricing' );
+			case 'below_floor':
+				return __( 'قیمت فعلی فروشگاه زیر کف است؛ اعمال قیمت مجاز نیست.', 'pricing' );
+			case 'wc_write_failed':
+				return __( 'نوشتن قیمت در ووکامرس ناموفق بود.', 'pricing' );
+			case 'ack_failed':
+				return __( 'قیمت در ووکامرس به‌روز شد، اما ثبت در سرویس Pricing انجام نشد. پس از رفع مشکل API دوباره اعمال کنید.', 'pricing' );
+			default:
+				return Pricing_Connection::error_message_for_code( $code );
 		}
-
-		return Pricing_Connection::error_message_for_code( $code );
 	}
 
 	/**

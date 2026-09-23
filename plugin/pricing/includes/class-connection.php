@@ -72,28 +72,32 @@ class Pricing_Connection {
 	 *     connected: bool,
 	 *     shop_name: string,
 	 *     plan_label: string,
+	 *     connected_at: string,
 	 *     reason: string
 	 * }
 	 */
 	public static function status() {
 		if ( self::is_connected() ) {
-			$connection = get_option( self::OPTION_CONNECTION, array() );
-			$shop_name  = isset( $connection['shop_name'] ) ? (string) $connection['shop_name'] : '';
-			$plan_label = isset( $connection['plan_label'] ) ? (string) $connection['plan_label'] : '';
+			$connection   = get_option( self::OPTION_CONNECTION, array() );
+			$shop_name    = isset( $connection['shop_name'] ) ? (string) $connection['shop_name'] : '';
+			$plan_label   = isset( $connection['plan_label'] ) ? (string) $connection['plan_label'] : '';
+			$connected_at = isset( $connection['connected_at'] ) ? (string) $connection['connected_at'] : '';
 
 			return array(
-				'connected'  => true,
-				'shop_name'  => $shop_name,
-				'plan_label' => $plan_label,
-				'reason'     => '',
+				'connected'    => true,
+				'shop_name'    => $shop_name,
+				'plan_label'   => $plan_label,
+				'connected_at' => $connected_at,
+				'reason'       => '',
 			);
 		}
 
 		return array(
-			'connected'  => false,
-			'shop_name'  => '',
-			'plan_label' => '',
-			'reason'     => 'disconnected',
+			'connected'    => false,
+			'shop_name'    => '',
+			'plan_label'   => '',
+			'connected_at' => '',
+			'reason'       => 'disconnected',
 		);
 	}
 
