@@ -1,7 +1,7 @@
 # Backend phases tracker
 
 **Audience:** Product owner, product manager, backend implementer  
-**Last reviewed:** 2026-09-12  
+**Last reviewed:** 2026-09-22  
 **Status source of truth:** this file (checkboxes). Contracts stay frozen in [`docs/contracts/wp-api-v1.md`](../contracts/wp-api-v1.md) and [`docs/contracts/wp-api-v1.openapi.yaml`](../contracts/wp-api-v1.openapi.yaml).
 
 ---
@@ -25,9 +25,9 @@
 
 ---
 
-## Current snapshot (2026-09-12)
+## Current snapshot (2026-09-22)
 
-Connector MVP (**B0–B5**) is implemented in `api/`. WP can call a real `/v1/connector/*` API with a seeded Bearer key. Recommendations are still a **stub** until **B6**.
+Connector MVP (**B0–B5**) plus **B6** cost engine are implemented in `api/`. WP can call a real `/v1/connector/*` API with a seeded Bearer key. Recommendations are **floor-aware** when a shop has a cost profile; otherwise a gated B4 stub applies in local/testing only.
 
 | Area | Today | Gap |
 |------|--------|-----|
@@ -35,8 +35,8 @@ Connector MVP (**B0–B5**) is implemented in `api/`. WP can call a real `/v1/co
 | Health | `GET /up` | Not a product endpoint |
 | Auth | Bearer shop API keys on connector routes; `users` table unused until B8 | Dashboard login (B8) |
 | Connector contract | Four frozen endpoints live under `/v1` | — |
-| Cost / rival engine | Stub: `recommended_price` = synced `price` | Real floor-aware engine (B6), rivals (B7) |
-| WP plugin | Phase **1.1** + **1.2** done | 1.3–1.7 can call local API instead of mocks |
+| Cost / rival engine | Floor-aware `floor_plus_margin` (equal-split overhead) | Rivals (B7); cost UI (B8) |
+| WP plugin | Phase **1.1–1.7** in plugin track | 1.8 floor refuse; packaging |
 
 ---
 
@@ -88,7 +88,7 @@ WordPress only: authenticate, push products, read a recommendation, acknowledge 
 | **B3** | `POST /v1/connector/products/sync` | WP 1.5, B4, B5 | **Done** |
 | **B4** | `GET .../recommendation` (stub engine OK) | WP 1.6, WP 1.8 floor flag | **Done** |
 | **B5** | `POST .../applied` | WP 1.7 | **Done** |
-| **B6** | Cost profile + real recommendation engine | Honest prices, dashboard, B7 | **Not started** |
+| **B6** | Cost profile + real recommendation engine | Honest prices, dashboard, B7 | **Done** |
 | **B7** | Rival prices (Torob / Snapp) | Competitive recommendations | **Not started** (spike first) |
 | **B8** | Seller dashboard (Inertia) | Self-serve keys, cost UI | **Not started** |
 | **B9** | Notifications / alerts | Alert-mode sellers | **Not started** |
@@ -332,7 +332,7 @@ Same Bearer key; then repeat with a bad key (401) and a never-synced id (404).
 
 ## B6 — Cost profile + real recommendation engine
 
-**Status:** Not started  
+**Status:** Done  
 **Must precede:** B3, B4 (replace stub)  
 **User outcome:** Recommended price is never below cost + minimum margin. This is the core product bet.
 
@@ -340,22 +340,24 @@ WP must not configure cost. Sellers do this on the SaaS (B8). Engine still runs 
 
 ### Remaining
 
-- [ ] Business-level cost profile: staff, rent, utilities, other fixed overhead
-- [ ] Per-SKU direct cost (COGS)
-- [ ] Overhead allocation method (equal split is enough for v1; revenue-weight later)
-- [ ] Cost floor per SKU = allocated overhead per unit + direct cost
-- [ ] Minimum margin % (global and/or per product)
-- [ ] Effective price floor = cost floor × (1 + minimum margin)
-- [ ] Optional max price cap per product
-- [ ] Strategy stub: e.g. `floor_plus_margin` until rivals exist; never emit below effective floor
-- [ ] Persist recommendation + `floor_price` + `below_floor` (true when **current store price** is below floor — WP uses this to refuse apply)
-- [ ] Recompute on cost change and on product sync
-- [ ] Pest: recommendation ≥ effective floor always; below-floor flag when synced price < floor
-- [ ] Remove or gate the B4 stub so production never returns “recommended = current price” without cost
+- [x] Business-level cost profile: staff, rent, utilities, other fixed overhead
+- [x] Per-SKU direct cost (COGS)
+- [x] Overhead allocation method (equal split is enough for v1; revenue-weight later)
+- [x] Cost floor per SKU = allocated overhead per unit + direct cost
+- [x] Minimum margin % (global and/or per product)
+- [x] Effective price floor = cost floor × (1 + minimum margin)
+- [x] Optional max price cap per product
+- [x] Strategy stub: e.g. `floor_plus_margin` until rivals exist; never emit below effective floor
+- [x] Persist recommendation + `floor_price` + `below_floor` (true when **current store price** is below floor — WP uses this to refuse apply)
+- [x] Recompute on cost change and on product sync
+- [x] Pest: recommendation ≥ effective floor always; below-floor flag when synced price < floor
+- [x] Remove or gate the B4 stub so production never returns “recommended = current price” without cost
 
 **Exit criteria:** A shop with a cost profile gets a floor-aware `recommended_price`. Contract response shape **unchanged**.
 
 **Open product question (do not block B6 start):** overhead allocation — equal split vs by units vs manual. Default **equal split** unless PO changes it here.
+
+**Implementation notes:** `shop_cost_profiles` + product `direct_cost` / `min_margin_percent` / `max_price`; `RecomputeShopRecommendations` on sync; `CONNECTOR_STUB_RECOMMENDATIONS` gates B4 stub when no profile (on in local/testing, off in production). Cost UI remains B8 (`RecomputeShopRecommendations` is callable from future cost saves).
 
 ---
 
@@ -486,7 +488,7 @@ Use this when planning sprints. Plugin checkboxes live in WP plans; backend chec
 | 1.5 Product sync | `POST /products/sync` | **B3** | Done |
 | 1.6 Recommendations UI | `GET /recommendation` | **B4** | Done |
 | 1.7 Manual apply | `POST /applied` | **B5** | Done |
-| 1.8 Status & safety | `below_floor` on recommendation | **B4** (flag) + **B6** (real flag) | Flag shipped (stub); real flag is B6 |
+| 1.8 Status & safety | `below_floor` on recommendation | **B4** (flag) + **B6** (real flag) | **Done** (real flag via B6 engine) |
 
 ---
 
@@ -529,7 +531,7 @@ Update answers here when decided; do not hide them in chat.
 4. ~~**B3** sync — unblocks WP 1.5.~~ Done.  
 5. ~~**B4** stub recommendation — unblocks WP 1.6 / 1.8 UI.~~ Done.  
 6. ~~**B5** applied — unblocks WP 1.7.~~ Done.  
-7. **B6** (real engine) and **B8** (dashboard) in parallel if needed.  
+7. ~~**B6** real engine.~~ Done. **B8** (dashboard) next for self-serve keys + cost UI.  
 8. **B7** after spike. **B9** / **B10** after there is something true to report.
 
 ---
@@ -538,5 +540,6 @@ Update answers here when decided; do not hide them in chat.
 
 | Date | Change |
 |------|--------|
+| 2026-09-22 | B6 Done: shop cost profiles, per-SKU costs, floor_plus_margin engine on sync, stub gated for production. |
 | 2026-09-12 | Connector MVP B0–B5 marked Done: `/v1` routes, Bearer shop keys, four WP endpoints, Pest, seeder. Stub recommendations remain until B6. |
 | 2026-09-12 | Initial tracker. Snapshot: Laravel starter only; WP plugin 1.1–1.2 done; connector endpoints not started. |

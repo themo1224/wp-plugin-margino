@@ -297,6 +297,22 @@
 	margin-top: 1.25rem;
 }
 
+.pricing-admin__panel--status {
+	margin-top: 1.25rem;
+}
+
+.pricing-admin__status-list {
+	margin: 0;
+	padding: 0 1.25rem 0 0;
+	list-style: disc;
+}
+
+.pricing-admin__status-list li {
+	padding: 0.25rem 0;
+	font-size: 0.95rem;
+	color: var(--pricing-muted-text);
+}
+
 .pricing-admin__recs-wrap {
 	overflow-x: auto;
 	margin-top: 0.5rem;
@@ -340,6 +356,16 @@
 	color: var(--pricing-muted-text);
 	background: var(--pricing-gold-soft);
 	border-radius: 4px;
+}
+
+.pricing-admin__recs-actions {
+	white-space: nowrap;
+	min-width: 7.5rem;
+}
+
+.pricing-admin__apply-form {
+	margin: 0;
+	display: inline-block;
 }
 
 .pricing-admin__recs-pagination {
