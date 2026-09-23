@@ -1,7 +1,7 @@
 # Backend phases tracker
 
 **Audience:** Product owner, product manager, backend implementer  
-**Last reviewed:** 2026-09-22  
+**Last reviewed:** 2026-09-23  
 **Status source of truth:** this file (checkboxes). Contracts stay frozen in [`docs/contracts/wp-api-v1.md`](../contracts/wp-api-v1.md) and [`docs/contracts/wp-api-v1.openapi.yaml`](../contracts/wp-api-v1.openapi.yaml).
 
 ---
@@ -25,17 +25,17 @@
 
 ---
 
-## Current snapshot (2026-09-22)
+## Current snapshot (2026-09-23)
 
-Connector MVP (**B0–B5**) plus **B6** cost engine are implemented in `api/`. WP can call a real `/v1/connector/*` API with a seeded Bearer key. Recommendations are **floor-aware** when a shop has a cost profile; otherwise a gated B4 stub applies in local/testing only.
+Connector MVP (**B0–B5**), **B6** cost engine, and **B8** seller dashboard are implemented in `api/`. Sellers can register, issue an API key, enter costs, and see synced products/recommendations. WP still uses Bearer keys on `/v1/connector/*`. Recommendations are **floor-aware** when a shop has a cost profile; otherwise a gated B4 stub applies in local/testing only.
 
 | Area | Today | Gap |
 |------|--------|-----|
-| App skeleton | Laravel 13, PHP 8.3, Pest, Pint, Larastan, Inertia welcome page | — |
+| App skeleton | Laravel 13, PHP 8.3, Pest, Pint, Larastan, Inertia dashboard | — |
 | Health | `GET /up` | Not a product endpoint |
-| Auth | Bearer shop API keys on connector routes; `users` table unused until B8 | Dashboard login (B8) |
+| Auth | Bearer shop API keys on connector; session auth for dashboard (B8) | — |
 | Connector contract | Four frozen endpoints live under `/v1` | — |
-| Cost / rival engine | Floor-aware `floor_plus_margin` (equal-split overhead) | Rivals (B7); cost UI (B8) |
+| Cost / rival engine | Floor-aware `floor_plus_margin` + dashboard cost UI | Rivals (B7) |
 | WP plugin | Phase **1.1–1.7** in plugin track | 1.8 floor refuse; packaging |
 
 ---
@@ -90,7 +90,7 @@ WordPress only: authenticate, push products, read a recommendation, acknowledge 
 | **B5** | `POST .../applied` | WP 1.7 | **Done** |
 | **B6** | Cost profile + real recommendation engine | Honest prices, dashboard, B7 | **Done** |
 | **B7** | Rival prices (Torob / Snapp) | Competitive recommendations | **Not started** (spike first) |
-| **B8** | Seller dashboard (Inertia) | Self-serve keys, cost UI | **Not started** |
+| **B8** | Seller dashboard (Inertia) | Self-serve keys, cost UI | **Done** |
 | **B9** | Notifications / alerts | Alert-mode sellers | **Not started** |
 | **B10** | Reports and analyses | Retention / “show the loss” | **Not started** |
 
@@ -214,7 +214,7 @@ This is the hidden backbone of the WP contract. Do not skip it and hard-code a k
 
 **Exit criteria:** WP 1.3 can save a key, call validate, and show connected vs disconnected without mocking a fake payload shape.
 
-**Product note:** This endpoint does not create a shop. Keys are issued by us (seeder now, dashboard in B8).
+**Product note:** This endpoint does not create a shop. Keys are issued via the seller dashboard (B8); ConnectorSeeder remains for local/WP smoke tests.
 
 ---
 
@@ -357,7 +357,7 @@ WP must not configure cost. Sellers do this on the SaaS (B8). Engine still runs 
 
 **Open product question (do not block B6 start):** overhead allocation — equal split vs by units vs manual. Default **equal split** unless PO changes it here.
 
-**Implementation notes:** `shop_cost_profiles` + product `direct_cost` / `min_margin_percent` / `max_price`; `RecomputeShopRecommendations` on sync; `CONNECTOR_STUB_RECOMMENDATIONS` gates B4 stub when no profile (on in local/testing, off in production). Cost UI remains B8 (`RecomputeShopRecommendations` is callable from future cost saves).
+**Implementation notes:** `shop_cost_profiles` + product `direct_cost` / `min_margin_percent` / `max_price`; `RecomputeShopRecommendations` on sync and on dashboard cost saves (B8); `CONNECTOR_STUB_RECOMMENDATIONS` gates B4 stub when no profile (on in local/testing, off in production).
 
 ---
 
@@ -394,7 +394,7 @@ WP must not configure cost. Sellers do this on the SaaS (B8). Engine still runs 
 
 ## B8 — Seller dashboard (Inertia web)
 
-**Status:** Not started  
+**Status:** Done  
 **Must precede:** B1 for login+shop; B6 for cost screens to be meaningful  
 **User outcome:** Seller can sign in on our site, get an API key, enter costs, see products and recommendations. WP stays a connector.
 
@@ -402,18 +402,20 @@ Starter kit already has Inertia + a `users` table.
 
 ### Remaining
 
-- [ ] Auth for humans (session): register/login/logout (keep small; no social required)
-- [ ] User owns one shop in v1 (multi-shop = Business, later)
-- [ ] Issue / reveal / revoke API key (plaintext once)
-- [ ] Show plan stub (Starter active) — real billing later
-- [ ] Cost profile forms (Farsi/RTL when you style; data first)
-- [ ] Product list from sync + recommendation + floor
-- [ ] Do **not** duplicate WP apply; dashboard is read + cost, not WooCommerce writes
-- [ ] Empty states: no key yet, no products synced yet, no cost yet
+- [x] Auth for humans (session): register/login/logout (keep small; no social required)
+- [x] User owns one shop in v1 (multi-shop = Business, later)
+- [x] Issue / reveal / revoke API key (plaintext once)
+- [x] Show plan stub (Starter active) — real billing later
+- [x] Cost profile forms (Farsi/RTL when you style; data first)
+- [x] Product list from sync + recommendation + floor
+- [x] Do **not** duplicate WP apply; dashboard is read + cost, not WooCommerce writes
+- [x] Empty states: no key yet, no products synced yet, no cost yet
 
 **Exit criteria:** A seller can self-serve a key and a cost profile without a developer seeder (seeders remain for tests).
 
 **Billing:** amounts not locked (`STRATEGY.md`). Dashboard may show plan **label** without charging.
+
+**Implementation notes:** Session auth + one `shops.user_id` per seller; `IssueApiKey` / reveal-once flash / revoke; cost profile + per-SKU cost saves call `RecomputeShopRecommendations`; Farsi/RTL Inertia pages under `/dashboard/*`. ConnectorSeeder remains for local/WP smoke tests.
 
 ---
 
@@ -515,7 +517,7 @@ Update answers here when decided; do not hide them in chat.
 | Question | Current default | Affects |
 |----------|-----------------|--------|
 | Overhead allocation | Equal split across SKUs | B6 |
-| Who issues the first API key? | Seeder until B8 | B1, B8, WP 1.3 local test |
+| Who issues the first API key? | Seller dashboard (B8); seeder for local/tests | B1, B8, WP 1.3 local test |
 | Stub recommendation acceptable for WP 1.6? | **Yes** | B4 vs B6 sequencing |
 | Production DB | SQLite local/MVP; production still undecided | B0 |
 | Billing | Starter/Pro labels only; no toman amounts | B1, B8 |
@@ -531,8 +533,9 @@ Update answers here when decided; do not hide them in chat.
 4. ~~**B3** sync — unblocks WP 1.5.~~ Done.  
 5. ~~**B4** stub recommendation — unblocks WP 1.6 / 1.8 UI.~~ Done.  
 6. ~~**B5** applied — unblocks WP 1.7.~~ Done.  
-7. ~~**B6** real engine.~~ Done. **B8** (dashboard) next for self-serve keys + cost UI.  
-8. **B7** after spike. **B9** / **B10** after there is something true to report.
+7. ~~**B6** real engine.~~ Done.  
+8. ~~**B8** dashboard (self-serve keys + cost UI).~~ Done.  
+9. **B7** after spike. **B9** / **B10** after there is something true to report.
 
 ---
 
@@ -540,6 +543,7 @@ Update answers here when decided; do not hide them in chat.
 
 | Date | Change |
 |------|--------|
+| 2026-09-23 | B8 Done: seller session auth, one shop per user, API key issue/reveal/revoke, cost + product dashboard (Farsi/RTL). |
 | 2026-09-22 | B6 Done: shop cost profiles, per-SKU costs, floor_plus_margin engine on sync, stub gated for production. |
 | 2026-09-12 | Connector MVP B0–B5 marked Done: `/v1` routes, Bearer shop keys, four WP endpoints, Pest, seeder. Stub recommendations remain until B6. |
 | 2026-09-12 | Initial tracker. Snapshot: Laravel starter only; WP plugin 1.1–1.2 done; connector endpoints not started. |
