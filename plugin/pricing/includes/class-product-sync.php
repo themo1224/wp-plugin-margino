@@ -189,7 +189,7 @@ class Pricing_Product_Sync {
 	/**
 	 * Build sync rows from published WooCommerce products (no variation children).
 	 *
-	 * @return array{products: list<array{external_id: string, sku: string|null, name: string, price: string}>, skipped: int}
+	 * @return array{products: list<array{external_id: string, sku: string|null, name: string, price: string, brand?: string, barcode?: string}>, skipped: int}
 	 */
 	public static function build_catalog() {
 		$products = array();
@@ -243,18 +243,122 @@ class Pricing_Product_Sync {
 				continue;
 			}
 
-			$products[] = array(
+			$row = array(
 				'external_id' => (string) $product->get_id(),
 				'sku'         => $sku,
 				'name'        => $name,
 				'price'       => $price,
 			);
+
+			$brand = self::resolve_brand( $product );
+			if ( null !== $brand ) {
+				$row['brand'] = $brand;
+			}
+
+			$barcode = self::resolve_barcode( $product );
+			if ( null !== $barcode ) {
+				$row['barcode'] = $barcode;
+			}
+
+			$products[] = $row;
 		}
 
 		return array(
 			'products' => $products,
 			'skipped'  => $skipped,
 		);
+	}
+
+	/**
+	 * Best-effort brand from WC attributes / meta.
+	 *
+	 * @param object $product WC product.
+	 * @return string|null
+	 */
+	private static function resolve_brand( $product ) {
+		$candidates = array();
+
+		if ( method_exists( $product, 'get_attribute' ) ) {
+			foreach ( array( 'pa_brand', 'brand', 'برند' ) as $attr ) {
+				$val = (string) $product->get_attribute( $attr );
+				if ( '' !== trim( $val ) ) {
+					$candidates[] = $val;
+				}
+			}
+		}
+
+		if ( method_exists( $product, 'get_meta' ) ) {
+			foreach ( array( '_brand', 'brand', 'product_brand' ) as $meta_key ) {
+				$val = $product->get_meta( $meta_key, true );
+				if ( is_string( $val ) && '' !== trim( $val ) ) {
+					$candidates[] = $val;
+				}
+			}
+		}
+
+		foreach ( $candidates as $raw ) {
+			$clean = self::clean_text_field( $raw, 191 );
+			if ( null !== $clean ) {
+				return $clean;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Best-effort GTIN/barcode from common WooCommerce metas.
+	 *
+	 * @param object $product WC product.
+	 * @return string|null
+	 */
+	private static function resolve_barcode( $product ) {
+		if ( ! method_exists( $product, 'get_meta' ) ) {
+			return null;
+		}
+
+		$keys = array(
+			'_global_unique_id',
+			'_wpm_gtin_code',
+			'_gtin',
+			'_ean',
+			'_barcode',
+			'barcode',
+			'gtin',
+		);
+
+		foreach ( $keys as $meta_key ) {
+			$val = $product->get_meta( $meta_key, true );
+			if ( ! is_string( $val ) && ! is_numeric( $val ) ) {
+				continue;
+			}
+			$clean = self::clean_text_field( (string) $val, 64 );
+			if ( null !== $clean ) {
+				return $clean;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param string $value Raw value.
+	 * @param int    $max   Max length.
+	 * @return string|null
+	 */
+	private static function clean_text_field( $value, $max ) {
+		$trimmed = trim( wp_strip_all_tags( $value ) );
+		if ( '' === $trimmed ) {
+			return null;
+		}
+
+		if ( function_exists( 'mb_substr' ) ) {
+			$trimmed = mb_substr( $trimmed, 0, $max );
+		} else {
+			$trimmed = substr( $trimmed, 0, $max );
+		}
+
+		return '' !== $trimmed ? $trimmed : null;
 	}
 
 	/**

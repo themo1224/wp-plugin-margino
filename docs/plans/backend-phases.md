@@ -27,7 +27,7 @@
 
 ## Current snapshot (2026-09-23)
 
-Connector MVP (**B0–B5**), **B6** cost engine, and **B8** seller dashboard are implemented in `api/`. Sellers can register, issue an API key, enter costs, and see synced products/recommendations. WP still uses Bearer keys on `/v1/connector/*`. Recommendations are **floor-aware** when a shop has a cost profile; otherwise a gated B4 stub applies in local/testing only.
+Connector MVP (**B0–B5**), **B6** cost engine, **B7** auto rivals, **B8** seller dashboard, **B9** email alerts, **B10** reports, and thin **marketplace license** mapping are implemented in `api/`. Sellers can register, issue an API key, enter costs, see rivals/recommendations/reports, and receive alerts. WP still uses Bearer keys on `/v1/connector/*`.
 
 | Area | Today | Gap |
 |------|--------|-----|
@@ -35,7 +35,7 @@ Connector MVP (**B0–B5**), **B6** cost engine, and **B8** seller dashboard are
 | Health | `GET /up` | Not a product endpoint |
 | Auth | Bearer shop API keys on connector; session auth for dashboard (B8) | — |
 | Connector contract | Four frozen endpoints live under `/v1` | — |
-| Cost / rival engine | Floor-aware `floor_plus_margin` + dashboard cost UI | Rivals (B7) |
+| Cost / rival engine | Floor-aware engine + Torob auto-rivals + alerts | Reports (B10); packaging |
 | WP plugin | Phase **1.1–1.7** in plugin track | 1.8 floor refuse; packaging |
 
 ---
@@ -89,10 +89,10 @@ WordPress only: authenticate, push products, read a recommendation, acknowledge 
 | **B4** | `GET .../recommendation` (stub engine OK) | WP 1.6, WP 1.8 floor flag | **Done** |
 | **B5** | `POST .../applied` | WP 1.7 | **Done** |
 | **B6** | Cost profile + real recommendation engine | Honest prices, dashboard, B7 | **Done** |
-| **B7** | Rival prices (Torob / Snapp) | Competitive recommendations | **Not started** (spike first) |
+| **B7** | Rival prices (Torob / Snapp) | Competitive recommendations | **Done** |
 | **B8** | Seller dashboard (Inertia) | Self-serve keys, cost UI | **Done** |
-| **B9** | Notifications / alerts | Alert-mode sellers | **Not started** |
-| **B10** | Reports and analyses | Retention / “show the loss” | **Not started** |
+| **B9** | Notifications / alerts | Alert-mode sellers | **Done** |
+| **B10** | Reports and analyses | Retention / “show the loss” | **Done** |
 
 **Connector MVP (plugin can finish Phase 1):** B0 + B1 + B2 + B3 + B4 + B5.  
 **Pricing MVP (seller gets a real safe price):** Connector MVP + B6 + enough of B8 to edit cost.  
@@ -363,32 +363,35 @@ WP must not configure cost. Sellers do this on the SaaS (B8). Engine still runs 
 
 ## B7 — Rival prices
 
-**Status:** Not started — **spike before commit**  
+**Status:** Done  
 **Must precede:** B6 for “use rivals in the recommendation”; can spike in parallel  
-**User outcome:** Seller can see if they are expensive vs Torob/Snapp, without matching a rival below floor.
+**User outcome:** Seller sees Torob/Snapp competitive context without pasting rival URLs; recommendations never match below floor.
 
-`STRATEGY.md` and the 2026-09-03 plan require this. Legal/ToS and rate limits are **open blockers**. Do not scrape in production until the spike says go.
+`STRATEGY.md`: auto-discover after sync; AI/heuristic match from name/brand/barcode; scrape/cache aggregators only (no Digikala/Basalam direct scrape; no seller URL paste).
 
 ### Spike (required before build)
 
-- [ ] Torob: can we fetch a product price reliably? Rate limits? Block risk?
-- [ ] Snapp (price-comparison): same
-- [ ] Matching: name search vs barcode/GTIN vs seller-mapped URL
-- [ ] Legal/ToS note recorded (go / no-go / manual-URL-only fallback)
-- [ ] Refresh cadence proposal (contract with ops: e.g. daily Starter, faster Pro)
+- [x] Torob: can we fetch a product price reliably? Rate limits? Block risk? → conditional go (flagged); see [`docs/spikes/torob-snapp-rival-fetch.md`](../spikes/torob-snapp-rival-fetch.md)
+- [x] Snapp (price-comparison): same → stub only this slice (no-go for live scrape)
+- [x] Matching: name / brand / barcode auto-match (confidence gate + rare one-tap confirm) — **not** seller-mapped URL paste
+- [x] Legal/ToS note recorded (conditional go / Snapp deferred)
+- [x] Refresh cadence: Starter 24h / 50 SKUs; Pro 6h / 500 SKUs
 
-### Build (only after spike go)
+### Build
 
-- [ ] Store rival snapshots per product: source, price, captured_at, listing identity
-- [ ] Surface cheapest, median, competitor count (dashboard / later public API — **not** WP Phase 1)
-- [ ] Feed engine: match cheapest / undercut % / median — **still never below effective floor**
-- [ ] If cheapest rival < floor: keep recommendation at floor; set data for “cannot match profitably” (alert in B9; WP already has `below_floor` for **seller’s** price vs floor)
-- [ ] Jobs/queue for refresh (Laravel `jobs` table already exists)
-- [ ] Starter vs Pro refresh limits (plan entitlements)
+- [x] Store rival snapshots per product: source, cheapest/median/count, captured_at, listing identity
+- [x] Surface cheapest, median, competitor count on dashboard (not WP Phase 1)
+- [x] Feed engine: match cheapest / undercut % / median — **still never below effective floor**
+- [x] If cheapest rival < floor: keep recommendation at floor; `cannot_match_profitably` (+ B9 alert)
+- [x] Jobs/queue for discover after sync + scheduled refresh
+- [x] Starter vs Pro refresh limits (plan entitlements)
+- [x] Missing/stale rivals → cost-based recommend + `rivals_stale`
 
-**Exit criteria:** At least one rival source updates on a schedule; recommendations can use rival data without violating floor.
+**Exit criteria:** Torob path updates on schedule (Fake in CI; HTTP behind `RIVALS_TOROB_ENABLED`); recommendations use rivals without floor violation.
 
-**Not in this phase:** using Digikala/Basalam as **sales** channels. Listings there may be rival sources later.
+**Not in this phase:** Digikala/Basalam as **sales** channels; seller URL paste for rivals.
+
+**Implementation notes:** `DiscoverShopRivalsJob` after sync; `HeuristicMatchAdvisor` + `FakeRivalCatalogClient` / flagged `TorobCatalogClient`; `RivalSnapshot` → floor-aware `ComputeProductRecommendation`; dashboard rival columns + one-tap confirm.
 
 ---
 
@@ -421,7 +424,7 @@ Starter kit already has Inertia + a `users` table.
 
 ## B9 — Notifications / alerts
 
-**Status:** Not started  
+**Status:** Done  
 **Must precede:** B6 (floor events); B7 for rival-undercut events  
 **User outcome:** Alert-mode sellers hear about danger without auto-changing WooCommerce prices.
 
@@ -429,21 +432,23 @@ Starter kit already has Inertia + a `users` table.
 
 ### Remaining
 
-- [ ] Event: current price below effective floor
-- [ ] Event: rival undercuts by more than threshold (needs B7)
-- [ ] Event: cost profile stale for X days
-- [ ] Channel v1: email (SMS later if needed)
-- [ ] Within 1 hour of relevant change (product success criterion)
-- [ ] Preference: alert vs (later) auto-apply — store on shop; WP Phase 1 is manual-only
-- [ ] No connector endpoint required for Phase 1 WP
+- [x] Event: current price below effective floor
+- [x] Event: rival undercuts by more than threshold (needs B7)
+- [x] Event: cost profile stale for X days
+- [x] Channel v1: email (SMS later if needed)
+- [x] Within 1 hour of relevant change (queued evaluate after recompute/rival refresh; hourly schedule)
+- [x] Preference: alert vs (later) auto-apply — `shops.pricing_mode` + `alerts_enabled`; WP Phase 1 remains manual-only
+- [x] No connector endpoint required for Phase 1 WP
 
-**Exit criteria:** One real email on below-floor after sync or cost change, in a non-prod environment.
+**Exit criteria:** Real below-floor email after sync/cost change in non-prod (Mail array / log driver).
+
+**Implementation notes:** `EvaluateShopAlerts` + `BelowFloorAlertMail` / `RivalUndercutAlertMail` / `CostProfileStaleAlertMail`; dedupe via `shop_alert_dispatches`; triggered from cost save, rival jobs, and hourly schedule.
 
 ---
 
 ## B10 — Reports and analyses
 
-**Status:** Not started  
+**Status:** Done  
 **Must precede:** B5 (applied history) + B6 (floor); B7 makes “lost to rivals” real  
 **User outcome:** Seller sees hidden loss / overpricing over time — the landing promise.
 
@@ -451,13 +456,26 @@ Starter kit already has Inertia + a `users` table.
 
 ### Remaining (keep thin)
 
-- [ ] Products below floor (count + list)
-- [ ] Products above cheapest rival (when B7 exists)
-- [ ] Apply rate: recommendations vs acknowledged applies
-- [ ] Simple date range (7 / 30 days)
-- [ ] Exposed on dashboard (B8), not on `/v1/connector/*`
+- [x] Products below floor (count + list)
+- [x] Products above cheapest rival (when B7 exists)
+- [x] Apply rate: recommendations vs acknowledged applies
+- [x] Simple date range (7 / 30 days)
+- [x] Exposed on dashboard (B8), not on `/v1/connector/*`
 
 **Exit criteria:** A shop with synced products and at least one apply can see a one-page summary.
+
+**Implementation notes:** `BuildShopReport` + Inertia `/dashboard/reports` (7/30 day toggle).
+
+---
+
+## Packaging / marketplace (Full Starter P4)
+
+**Status:** Done (thin)
+
+- [x] Production deploy notes: [`docs/deploy/production.md`](../deploy/production.md)
+- [x] Time-bound Zhaket/RTL license webhook → `shop_licenses` + plan (no forever unlock)
+- [x] Plugin `readme.txt` + [`plugin/pricing/MARKETPLACE.md`](../../plugin/pricing/MARKETPLACE.md)
+- [x] Starter/Pro rival entitlements on `plans` (refresh hours + max SKUs)
 
 ---
 
@@ -467,8 +485,8 @@ Starter kit already has Inertia + a `users` table.
 |------|----------|
 | Auto-apply / cron / webhooks **into** WP | Phase 1 is manual apply; trust on-ramp. Pro plan later. |
 | Public REST API for custom-coded shops | Strategy: coming soon until engine + first paid WP users |
-| Instagram bot | Feasibility + legal risk; coming soon only |
-| Real billing / Zhaket subscription mapping | Plan amounts not locked; seeder plan is enough for connector MVP |
+| Instagram bot | Feasibility + legal risk; coming soon only — tracker: [`instagram-phases.md`](./instagram-phases.md) |
+| Full payment gateway / locked toman amounts | Thin license webhook is enough for marketplace activate; amounts still open |
 | Multiple shops per user | Business tier |
 | Digikala / Basalam listing management | Out of strategy (rivals only) |
 | Inflation / FX cost prediction | Future differentiator |
@@ -521,7 +539,7 @@ Update answers here when decided; do not hide them in chat.
 | Stub recommendation acceptable for WP 1.6? | **Yes** | B4 vs B6 sequencing |
 | Production DB | SQLite local/MVP; production still undecided | B0 |
 | Billing | Starter/Pro labels only; no toman amounts | B1, B8 |
-| Torob/Snapp scrape | Spike required | B7 |
+| Torob/Snapp scrape | Spike done: Torob conditional go (flagged); Snapp stub | B7 |
 
 ---
 
@@ -535,7 +553,9 @@ Update answers here when decided; do not hide them in chat.
 6. ~~**B5** applied — unblocks WP 1.7.~~ Done.  
 7. ~~**B6** real engine.~~ Done.  
 8. ~~**B8** dashboard (self-serve keys + cost UI).~~ Done.  
-9. **B7** after spike. **B9** / **B10** after there is something true to report.
+9. ~~**B7** rivals after spike.~~ Done.  
+10. ~~**B9** alerts.~~ Done.  
+11. ~~**B10** reports.~~ Done. Packaging/license webhook shipped (P4).
 
 ---
 
@@ -543,6 +563,7 @@ Update answers here when decided; do not hide them in chat.
 
 | Date | Change |
 |------|--------|
+| 2026-09-23 | B7 + B9 Done: Torob spike, auto-match rivals, floor-aware rival engine, dashboard rival stats, email alerts (below floor / undercut / stale cost). |
 | 2026-09-23 | B8 Done: seller session auth, one shop per user, API key issue/reveal/revoke, cost + product dashboard (Farsi/RTL). |
 | 2026-09-22 | B6 Done: shop cost profiles, per-SKU costs, floor_plus_margin engine on sync, stub gated for production. |
 | 2026-09-12 | Connector MVP B0–B5 marked Done: `/v1` routes, Bearer shop keys, four WP endpoints, Pest, seeder. Stub recommendations remain until B6. |

@@ -4,6 +4,8 @@ Phase **1.8** (Phase 1 connector complete): RTL admin + connect + sync + recomme
 
 Contract: [`docs/contracts/wp-api-v1.md`](../../docs/contracts/wp-api-v1.md)
 
+Marketplace packaging (Zhaket/RTL): [`readme.txt`](readme.txt) + [`MARKETPLACE.md`](MARKETPLACE.md). SaaS signup required — plugin alone does not unlock forever.
+
 ## Prefix / text domain
 
 - Function / option / hook prefix: `pricing_`

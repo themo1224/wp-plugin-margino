@@ -85,7 +85,9 @@ Upserts WooCommerce products from the store into the API.
       "external_id": "42",
       "sku": "SKU-001",
       "name": "Sample Product",
-      "price": "1500000"
+      "price": "1500000",
+      "brand": "Chanel",
+      "barcode": "3145891164602"
     }
   ]
 }
@@ -98,6 +100,8 @@ Upserts WooCommerce products from the store into the API.
 | `products[].sku` | string \| null | Optional SKU |
 | `products[].name` | string | Product title |
 | `products[].price` | string | Current regular/sale price as decimal string |
+| `products[].brand` | string \| null | Optional brand (improves rival matching) |
+| `products[].barcode` | string \| null | Optional GTIN/barcode (best rival match key) |
 
 **Response `200`:**
 

@@ -283,6 +283,14 @@ components:
         price:
           type: string
           description: Non-negative decimal string
+        brand:
+          type: string
+          nullable: true
+          description: Optional brand for rival matching
+        barcode:
+          type: string
+          nullable: true
+          description: Optional GTIN/barcode for rival matching
 
     ProductSyncRequest:
       type: object
