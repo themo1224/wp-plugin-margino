@@ -1,0 +1,13 @@
+{
+  "id": "P016",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Automating 6-hour Torob refresh without slowing my site helps me dominate the Torob buy box safely.",
+  "objection": "How quickly it reacts when competitor drops prices.",
+  "would_change_my_mind": "",
+  "price_too_cheap": 200000,
+  "price_cheap": 500000,
+  "price_expensive": 1100000,
+  "price_too_expensive": 2200000
+}

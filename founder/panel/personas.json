@@ -1,0 +1,222 @@
+[
+ {
+  "id": "P001",
+  "name": "Finn",
+  "age": 40,
+  "segment": "Established High-Volume Merchant (800+ SKUs, multi-channel)",
+  "income": 2054845000,
+  "behaviour": "Overwhelmed operator",
+  "behaviour_how": "Spends evenings manually updating WooCommerce prices from supplier Telegram lists; desperately needs time back.",
+  "objection": "Will this plugin slow down my WooCommerce site or conflict with LiteSpeed/WP Rocket?",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P002",
+  "name": "Callum",
+  "age": 44,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 212673000,
+  "behaviour": "Torob rank-obsessed",
+  "behaviour_how": "Checks Torob 4 times a day manually to stay in the top 3 positions; paranoid about competitors undercutting.",
+  "objection": "What happens when Torob blocks your scrapers or changes their website structure?",
+  "habit": "you receive supplier price updates in Telegram channels and voice notes"
+ },
+ {
+  "id": "P003",
+  "name": "Lina",
+  "age": 28,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 580609000,
+  "behaviour": "Margin-conscious survivor",
+  "behaviour_how": "Got burned previously when USD surged and sold inventory below replacement cost; anxious about restocking.",
+  "objection": "Entering cost prices and margins for 400 products is too much manual work.",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P004",
+  "name": "Hana",
+  "age": 43,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 218073000,
+  "behaviour": "Zhaket one-off plugin buyer",
+  "behaviour_how": "Accustomed to buying lifetime GPL/Zhaket plugins for 400,000 Toman; deeply suspicious of monthly SaaS fees.",
+  "objection": "Why pay 1,000,000 Toman every month when I can buy a one-time Zhaket plugin for 400,000 Toman?",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P005",
+  "name": "Aisha",
+  "age": 35,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 878446000,
+  "behaviour": "Zhaket one-off plugin buyer",
+  "behaviour_how": "Accustomed to buying lifetime GPL/Zhaket plugins for 400,000 Toman; deeply suspicious of monthly SaaS fees.",
+  "objection": "My suppliers don't provide clean price lists; their prices change randomly on Telegram.",
+  "habit": "you check your Torob dashboard daily to see clicks and cost-per-click spend"
+ },
+ {
+  "id": "P006",
+  "name": "Sana",
+  "age": 31,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 394176000,
+  "behaviour": "Tech-skeptical store owner",
+  "behaviour_how": "Fears plugin conflicts, site slowdowns, or an automated script destroying product prices.",
+  "objection": "Will this plugin slow down my WooCommerce site or conflict with LiteSpeed/WP Rocket?",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P007",
+  "name": "Ezra",
+  "age": 26,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 791825000,
+  "behaviour": "Margin-conscious survivor",
+  "behaviour_how": "Got burned previously when USD surged and sold inventory below replacement cost; anxious about restocking.",
+  "objection": "My suppliers don't provide clean price lists; their prices change randomly on Telegram.",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P008",
+  "name": "Owen",
+  "age": 48,
+  "segment": "Established High-Volume Merchant (800+ SKUs, multi-channel)",
+  "income": 1722424000,
+  "behaviour": "Zhaket one-off plugin buyer",
+  "behaviour_how": "Accustomed to buying lifetime GPL/Zhaket plugins for 400,000 Toman; deeply suspicious of monthly SaaS fees.",
+  "objection": "Entering cost prices and margins for 400 products is too much manual work.",
+  "habit": "you receive supplier price updates in Telegram channels and voice notes"
+ },
+ {
+  "id": "P009",
+  "name": "Jordan",
+  "age": 45,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 249809000,
+  "behaviour": "Torob rank-obsessed",
+  "behaviour_how": "Checks Torob 4 times a day manually to stay in the top 3 positions; paranoid about competitors undercutting.",
+  "objection": "Will this plugin slow down my WooCommerce site or conflict with LiteSpeed/WP Rocket?",
+  "habit": "you receive supplier price updates in Telegram channels and voice notes"
+ },
+ {
+  "id": "P010",
+  "name": "Farah",
+  "age": 32,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 671328000,
+  "behaviour": "Wait-and-see follower",
+  "behaviour_how": "Only adopts new tools after seeing colleagues or industry Telegram groups recommend them.",
+  "objection": "Will this plugin slow down my WooCommerce site or conflict with LiteSpeed/WP Rocket?",
+  "habit": "you pack and dispatch orders between 2 PM and 5 PM every day"
+ },
+ {
+  "id": "P011",
+  "name": "Rosa",
+  "age": 30,
+  "segment": "Established High-Volume Merchant (800+ SKUs, multi-channel)",
+  "income": 2296925000,
+  "behaviour": "Margin-conscious survivor",
+  "behaviour_how": "Got burned previously when USD surged and sold inventory below replacement cost; anxious about restocking.",
+  "objection": "My suppliers don't provide clean price lists; their prices change randomly on Telegram.",
+  "habit": "you receive supplier price updates in Telegram channels and voice notes"
+ },
+ {
+  "id": "P012",
+  "name": "Sara",
+  "age": 46,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 543913000,
+  "behaviour": "Margin-conscious survivor",
+  "behaviour_how": "Got burned previously when USD surged and sold inventory below replacement cost; anxious about restocking.",
+  "objection": "What happens when Torob blocks your scrapers or changes their website structure?",
+  "habit": "you check your Torob dashboard daily to see clicks and cost-per-click spend"
+ },
+ {
+  "id": "P013",
+  "name": "Sienna",
+  "age": 38,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 338919000,
+  "behaviour": "Margin-conscious survivor",
+  "behaviour_how": "Got burned previously when USD surged and sold inventory below replacement cost; anxious about restocking.",
+  "objection": "Can't I just keep checking Torob manually or have my assistant do it in Excel?",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P014",
+  "name": "Luca",
+  "age": 31,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 492571000,
+  "behaviour": "Zhaket one-off plugin buyer",
+  "behaviour_how": "Accustomed to buying lifetime GPL/Zhaket plugins for 400,000 Toman; deeply suspicious of monthly SaaS fees.",
+  "objection": "What if the bot matches the wrong product on Torob and slashes my price by 40%?",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P015",
+  "name": "Oscar",
+  "age": 42,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 266324000,
+  "behaviour": "Overwhelmed operator",
+  "behaviour_how": "Spends evenings manually updating WooCommerce prices from supplier Telegram lists; desperately needs time back.",
+  "objection": "Will this plugin slow down my WooCommerce site or conflict with LiteSpeed/WP Rocket?",
+  "habit": "you receive supplier price updates in Telegram channels and voice notes"
+ },
+ {
+  "id": "P016",
+  "name": "Rohan",
+  "age": 24,
+  "segment": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+  "income": 401886000,
+  "behaviour": "Torob rank-obsessed",
+  "behaviour_how": "Checks Torob 4 times a day manually to stay in the top 3 positions; paranoid about competitors undercutting.",
+  "objection": "What happens when Torob blocks your scrapers or changes their website structure?",
+  "habit": "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales"
+ },
+ {
+  "id": "P017",
+  "name": "Maya",
+  "age": 31,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 164154000,
+  "behaviour": "Overwhelmed operator",
+  "behaviour_how": "Spends evenings manually updating WooCommerce prices from supplier Telegram lists; desperately needs time back.",
+  "objection": "Why pay 1,000,000 Toman every month when I can buy a one-time Zhaket plugin for 400,000 Toman?",
+  "habit": "you check your Torob dashboard daily to see clicks and cost-per-click spend"
+ },
+ {
+  "id": "P018",
+  "name": "Pablo",
+  "age": 26,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 257973000,
+  "behaviour": "Wait-and-see follower",
+  "behaviour_how": "Only adopts new tools after seeing colleagues or industry Telegram groups recommend them.",
+  "objection": "What if the bot matches the wrong product on Torob and slashes my price by 40%?",
+  "habit": "you pack and dispatch orders between 2 PM and 5 PM every day"
+ },
+ {
+  "id": "P019",
+  "name": "Marco",
+  "age": 30,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 263239000,
+  "behaviour": "Torob rank-obsessed",
+  "behaviour_how": "Checks Torob 4 times a day manually to stay in the top 3 positions; paranoid about competitors undercutting.",
+  "objection": "What happens when Torob blocks your scrapers or changes their website structure?",
+  "habit": "you pack and dispatch orders between 2 PM and 5 PM every day"
+ },
+ {
+  "id": "P020",
+  "name": "Jasper",
+  "age": 31,
+  "segment": "Boutique / Solo Merchant (50-200 SKUs)",
+  "income": 314770000,
+  "behaviour": "Tech-skeptical store owner",
+  "behaviour_how": "Fears plugin conflicts, site slowdowns, or an automated script destroying product prices.",
+  "objection": "My suppliers don't provide clean price lists; their prices change randomly on Telegram.",
+  "habit": "you pack and dispatch orders between 2 PM and 5 PM every day"
+ }
+]

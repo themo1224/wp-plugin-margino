@@ -1,0 +1,13 @@
+{
+  "id": "P002",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Automatic Torob competitor detection without pasting links is worth every toman of the 500k Starter plan.",
+  "objection": "What happens if Torob blocks scrapers temporarily?",
+  "would_change_my_mind": "",
+  "price_too_cheap": 100000,
+  "price_cheap": 300000,
+  "price_expensive": 700000,
+  "price_too_expensive": 1200000
+}

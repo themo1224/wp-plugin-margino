@@ -1,0 +1,13 @@
+{
+  "id": "P007",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Preventing negative-margin sales during currency swings is worth far more than 980k a month.",
+  "objection": "Keeping supplier costs refreshed when exchange rates surge.",
+  "would_change_my_mind": "",
+  "price_too_cheap": 250000,
+  "price_cheap": 600000,
+  "price_expensive": 1200000,
+  "price_too_expensive": 2200000
+}

@@ -1,0 +1,13 @@
+{
+  "id": "P012",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Cost floor enforcement combined with zero server load makes this a reliable safety net for our catalog.",
+  "objection": "Torob scraper resilience over time.",
+  "would_change_my_mind": "",
+  "price_too_cheap": 200000,
+  "price_cheap": 500000,
+  "price_expensive": 1100000,
+  "price_too_expensive": 2000000
+}

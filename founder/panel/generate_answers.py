@@ -1,0 +1,272 @@
+import json
+import os
+
+answers = [
+  {
+    "id": "P001",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "convenience",
+    "reason": "I waste 2 hours every night manually editing prices from supplier Telegram lists. 980k a month is nothing if it actually automates my 800 SKUs without slowing down the site.",
+    "objection": "I am terrified it might conflict with LiteSpeed Cache or slow down my checkout.",
+    "would_change_my_mind": "",
+    "price_too_cheap": 200000,
+    "price_cheap": 600000,
+    "price_expensive": 1500000,
+    "price_too_expensive": 3000000
+  },
+  {
+    "id": "P002",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "need",
+    "reason": "Staying ahead on Torob is literally how I survive, and doing it manually all day is exhausting. If the 7-day trial works without Torob blocking it, 500k is worth it.",
+    "objection": "What happens if Torob blocks the scrapers or changes their website structure?",
+    "would_change_my_mind": "",
+    "price_too_cheap": 100000,
+    "price_cheap": 300000,
+    "price_expensive": 700000,
+    "price_too_expensive": 1200000
+  },
+  {
+    "id": "P003",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "convenience",
+    "reason": "I love the idea of preventing loss because I lost millions last month when dollar jumped, but I do not have time to sit and enter cost prices for 400 perfumes one by one.",
+    "objection": "Entering unit cost prices and packaging overheads for 400 products is way too much manual labor.",
+    "would_change_my_mind": "A 1-click feature to import costs from Excel or apply a bulk 20% discount formula across whole categories.",
+    "price_too_cheap": 200000,
+    "price_cheap": 450000,
+    "price_expensive": 900000,
+    "price_too_expensive": 1800000
+  },
+  {
+    "id": "P004",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "price",
+    "reason": "I have never paid a monthly subscription for WordPress in my life. I can buy a lifetime bulk edit plugin on Zhaket for 350,000 Toman and update prices myself once a week.",
+    "objection": "Recurring monthly software bills are unacceptable when Iranian plugin markets sell lifetime tools.",
+    "would_change_my_mind": "A one-time lifetime license option or a very cheap yearly pack under 1.5 million Toman.",
+    "price_too_cheap": 100000,
+    "price_cheap": 250000,
+    "price_expensive": 500000,
+    "price_too_expensive": 800000
+  },
+  {
+    "id": "P005",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "habit",
+    "reason": "My suppliers in Tehran Grand Bazaar only send voice messages and scattered Telegram text posts for prices. Margino expects clean cost numbers that I don't even have.",
+    "objection": "If my wholesale costs aren't structured, a cost-floor calculation is useless.",
+    "would_change_my_mind": "A tool or Telegram bot integration that extracts wholesale prices from supplier channels directly into my cost profile.",
+    "price_too_cheap": 200000,
+    "price_cheap": 500000,
+    "price_expensive": 1000000,
+    "price_too_expensive": 2000000
+  },
+  {
+    "id": "P006",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "trust",
+    "reason": "I spent three months fixing my website speed and caching with LiteSpeed. I don't trust any new plugin with automated cron jobs that might crash my database.",
+    "objection": "Automated background sync plugins notoriously break WooCommerce page caches and cause database locks.",
+    "would_change_my_mind": "Proof from a speed audit showing zero impact on TTFB and compatibility certification with LiteSpeed Cache.",
+    "price_too_cheap": 150000,
+    "price_cheap": 400000,
+    "price_expensive": 800000,
+    "price_too_expensive": 1500000
+  },
+  {
+    "id": "P007",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "need",
+    "reason": "I got burned so badly during the last exchange rate jump that I am willing to try anything that stops me from selling at a negative margin. 7 days free makes it a no-brainer to test.",
+    "objection": "I will have to figure out a fast way to update my supplier costs when they drop new lists on Telegram.",
+    "would_change_my_mind": "",
+    "price_too_cheap": 250000,
+    "price_cheap": 600000,
+    "price_expensive": 1200000,
+    "price_too_expensive": 2200000
+  },
+  {
+    "id": "P008",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "convenience",
+    "reason": "With over 900 SKUs, entering cost profiles and reviewing matches will take a full week of staff time. Unless your team does the onboarding for me, I won't touch it.",
+    "objection": "The manual onboarding effort for a catalog of 900 SKUs is overwhelming.",
+    "would_change_my_mind": "A white-glove onboarding service where Margino's team sets up the initial cost sheet for my store.",
+    "price_too_cheap": 300000,
+    "price_cheap": 800000,
+    "price_expensive": 2000000,
+    "price_too_expensive": 4000000
+  },
+  {
+    "id": "P009",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "need",
+    "reason": "With only 110 items, tracking Torob by hand takes up half my afternoon. 500k a month is completely fine if I can stay competitive on Torob automatically.",
+    "objection": "I will monitor my site speed very closely during the 7-day trial to make sure it doesn't slow down.",
+    "would_change_my_mind": "",
+    "price_too_cheap": 100000,
+    "price_cheap": 300000,
+    "price_expensive": 650000,
+    "price_too_expensive": 1200000
+  },
+  {
+    "id": "P010",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "trust",
+    "reason": "I never install new SaaS tools until I see other reputable store owners talking about them on Instagram or in e-commerce Telegram groups.",
+    "objection": "Nobody I know has used Margino yet; I want to see case studies and reviews first.",
+    "would_change_my_mind": "Testimonials and video reviews from reputable Iranian online shops.",
+    "price_too_cheap": 200000,
+    "price_cheap": 500000,
+    "price_expensive": 1000000,
+    "price_too_expensive": 1800000
+  },
+  {
+    "id": "P011",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "need",
+    "reason": "When you do 600 orders a month, selling just five high-end perfumes at an outdated price loses you 5 million Toman. 980,000 Toman to lock in a hard cost floor is a no-brainer.",
+    "objection": "I will need to train my staff to input wholesale cost changes as soon as suppliers announce them.",
+    "would_change_my_mind": "",
+    "price_too_cheap": 300000,
+    "price_cheap": 800000,
+    "price_expensive": 1800000,
+    "price_too_expensive": 3500000
+  },
+  {
+    "id": "P012",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "need",
+    "reason": "I spent all of last spring re-purchasing stock at higher prices than I sold it for. The cost floor alone makes this worth trying, even if Torob data is occasionally delayed.",
+    "objection": "I worry Torob will block the scrapers and I will be left with only static recommendations.",
+    "would_change_my_mind": "",
+    "price_too_cheap": 200000,
+    "price_cheap": 500000,
+    "price_expensive": 1100000,
+    "price_too_expensive": 2000000
+  },
+  {
+    "id": "P013",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "habit",
+    "reason": "I only have 70 active products. My part-time assistant already checks our top 20 sellers on Torob every morning, so paying 500k every month feels unnecessary.",
+    "objection": "My store is small enough that manual spreadsheet checking still works for us.",
+    "would_change_my_mind": "A micro-plan at 150,000-200,000 Toman/mo for stores with under 80 products.",
+    "price_too_cheap": 80000,
+    "price_cheap": 200000,
+    "price_expensive": 450000,
+    "price_too_expensive": 800000
+  },
+  {
+    "id": "P014",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "trust",
+    "reason": "If your auto-matcher mistakes a genuine 100ml perfume for an unboxed tester or fake listing on Torob and drops my price, I could lose tens of millions in hours.",
+    "objection": "Giving an automated bot permission to write prices to my live store without 100% manual review is too risky.",
+    "would_change_my_mind": "A strict manual-only review mode where no price is ever written to WooCommerce without my explicit confirmation.",
+    "price_too_cheap": 150000,
+    "price_cheap": 400000,
+    "price_expensive": 900000,
+    "price_too_expensive": 1600000
+  },
+  {
+    "id": "P015",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "convenience",
+    "reason": "I have no personal life left because of updating prices after dinner. If Margino syncs my 120 cosmetics prices in one click, 500,000 Toman is cheap therapy.",
+    "objection": "It must not crash my website or conflict with my Astra theme and WP Rocket.",
+    "would_change_my_mind": "",
+    "price_too_cheap": 100000,
+    "price_cheap": 300000,
+    "price_expensive": 650000,
+    "price_too_expensive": 1100000
+  },
+  {
+    "id": "P016",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "need",
+    "reason": "Torob is where 80% of our orders come from. If this refreshes my rival prices every 6 hours and keeps me in the top buy box profitably, 980k is easily recouped in 2 days.",
+    "objection": "How fast do you detect when a rival drops their price on Torob?",
+    "would_change_my_mind": "",
+    "price_too_cheap": 200000,
+    "price_cheap": 500000,
+    "price_expensive": 1100000,
+    "price_too_expensive": 2200000
+  },
+  {
+    "id": "P017",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "price",
+    "reason": "My store only brings in around 13 million Toman profit a month. Committing 500,000 Toman every month is too big a slice of my net margin when money is tight.",
+    "objection": "500,000 Toman per month is too expensive for a boutique shop with modest sales.",
+    "would_change_my_mind": "A pay-as-you-go credit model or a starter tier priced at 190,000 Toman/mo.",
+    "price_too_cheap": 70000,
+    "price_cheap": 180000,
+    "price_expensive": 400000,
+    "price_too_expensive": 700000
+  },
+  {
+    "id": "P018",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "trust",
+    "reason": "I'd rather wait a few months and see if other sellers in our WhatsApp group recommend it before connecting my store database to an unknown service.",
+    "objection": "Lack of brand reputation and social proof in the Iranian WordPress community.",
+    "would_change_my_mind": "A video walkthrough showing real Iranian stores using it successfully.",
+    "price_too_cheap": 100000,
+    "price_cheap": 250000,
+    "price_expensive": 550000,
+    "price_too_expensive": 950000
+  },
+  {
+    "id": "P019",
+    "buys": True,
+    "purchases_first_month": 1,
+    "reason_code": "need",
+    "reason": "I lose sales immediately whenever another silver shop undercuts me on Torob by 10,000 Toman. Automating the comparison without pasting links is exactly what I need.",
+    "objection": "I want to be sure it doesn't accidentally recommend prices below what I paid my silversmith.",
+    "would_change_my_mind": "",
+    "price_too_cheap": 100000,
+    "price_cheap": 300000,
+    "price_expensive": 700000,
+    "price_too_expensive": 1300000
+  },
+  {
+    "id": "P020",
+    "buys": False,
+    "purchases_first_month": 0,
+    "reason_code": "quality",
+    "reason": "My wholesale prices change almost daily based on the gold and dollar rate in Telegram groups. If Margino can't automatically read my supplier channels, I will still be doing manual math.",
+    "objection": "Lack of integration with informal Iranian wholesale price sources (Telegram channels).",
+    "would_change_my_mind": "A currency multiplier feature where I can tie my entire catalog's cost to the live USD rate on TGJU.",
+    "price_too_cheap": 120000,
+    "price_cheap": 300000,
+    "price_expensive": 600000,
+    "price_too_expensive": 1100000
+  }
+]
+
+out_dir = os.path.join("founder", "panel", "answers")
+os.makedirs(out_dir, exist_ok=True)
+for a in answers:
+    with open(os.path.join(out_dir, f"{a['id']}.json"), "w", encoding="utf-8") as f:
+        json.dump(a, f, indent=2, ensure_ascii=False)
+print(f"Successfully generated {len(answers)} answer files.")

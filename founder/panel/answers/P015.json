@@ -1,0 +1,13 @@
+{
+  "id": "P015",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "convenience",
+  "reason": "Zero manual entry plus 1-click price sync gives me back hours of evening packing time.",
+  "objection": "Ensuring the plugin stays lightweight on shared hosting.",
+  "would_change_my_mind": "",
+  "price_too_cheap": 100000,
+  "price_cheap": 300000,
+  "price_expensive": 650000,
+  "price_too_expensive": 1100000
+}

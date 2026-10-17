@@ -1,0 +1,13 @@
+{
+  "id": "P004",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "Even with cloud servers, I still hate recurring subscriptions when Zhaket has one-off tools. I might test the 7-day free trial, but I doubt I'll renew.",
+  "objection": "Monthly subscriptions feel like rent compared to one-time plugin purchases.",
+  "would_change_my_mind": "A heavily discounted annual plan or lifetime license.",
+  "price_too_cheap": 100000,
+  "price_cheap": 250000,
+  "price_expensive": 500000,
+  "price_too_expensive": 800000
+}

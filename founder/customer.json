@@ -1,0 +1,70 @@
+{
+  "business": "Margino (مارژینو - نرم‌افزار هوش رقبا و قیمت‌گذاری خودکار ووکامرس)",
+  "target": "Iranian independent e-commerce store owners running WooCommerce stores selling buy-and-resell products (perfume, cosmetics, silver accessories, electronics)",
+  "where": "Iran (Tehran, Isfahan, Mashhad, Shiraz, Tabriz, and provincial cities)",
+  "age": [24, 48],
+  "segments": [
+    {
+      "name": "Boutique / Solo Merchant (50-200 SKUs)",
+      "share": 0.45,
+      "income": [150000000, 360000000]
+    },
+    {
+      "name": "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+      "share": 0.40,
+      "income": [360000000, 950000000]
+    },
+    {
+      "name": "Established High-Volume Merchant (800+ SKUs, multi-channel)",
+      "share": 0.15,
+      "income": [950000000, 2400000000]
+    }
+  ],
+  "behaviours": [
+    {
+      "name": "Margin-conscious survivor",
+      "share": 0.25,
+      "how": "Got burned previously when USD surged and sold inventory below replacement cost; anxious about restocking."
+    },
+    {
+      "name": "Torob rank-obsessed",
+      "share": 0.20,
+      "how": "Checks Torob 4 times a day manually to stay in the top 3 positions; paranoid about competitors undercutting."
+    },
+    {
+      "name": "Zhaket one-off plugin buyer",
+      "share": 0.20,
+      "how": "Accustomed to buying lifetime GPL/Zhaket plugins for 400,000 Toman; deeply suspicious of monthly SaaS fees."
+    },
+    {
+      "name": "Overwhelmed operator",
+      "share": 0.15,
+      "how": "Spends evenings manually updating WooCommerce prices from supplier Telegram lists; desperately needs time back."
+    },
+    {
+      "name": "Tech-skeptical store owner",
+      "share": 0.10,
+      "how": "Fears plugin conflicts, site slowdowns, or an automated script destroying product prices."
+    },
+    {
+      "name": "Wait-and-see follower",
+      "share": 0.10,
+      "how": "Only adopts new tools after seeing colleagues or industry Telegram groups recommend them."
+    }
+  ],
+  "objections": [
+    "Why pay 1,000,000 Toman every month when I can buy a one-time Zhaket plugin for 400,000 Toman?",
+    "Entering cost prices and margins for 400 products is too much manual work.",
+    "What if the bot matches the wrong product on Torob and slashes my price by 40%?",
+    "Can't I just keep checking Torob manually or have my assistant do it in Excel?",
+    "Will this plugin slow down my WooCommerce site or conflict with LiteSpeed/WP Rocket?",
+    "What happens when Torob blocks your scrapers or changes their website structure?",
+    "My suppliers don't provide clean price lists; their prices change randomly on Telegram."
+  ],
+  "habits": [
+    "you check the dollar rate on Bonbast or TGJU every morning before checking shop sales",
+    "you receive supplier price updates in Telegram channels and voice notes",
+    "you check your Torob dashboard daily to see clicks and cost-per-click spend",
+    "you pack and dispatch orders between 2 PM and 5 PM every day"
+  ]
+}

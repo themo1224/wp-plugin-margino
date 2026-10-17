@@ -1,3 +1,37 @@
+# Sub-repositories
 /api/
-/.cursor/
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.cursor/
+.fleet/
+.zed/
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# WordPress & Plugin Artifacts
 plugin/pricing.zip
+plugin/pricing/vendor/
+*.log
+
+# Temporary & Scratch Files
+tmp/
+temp/
+scratch/
+.system_generated/

@@ -1,0 +1,13 @@
+{
+  "id": "P017",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "price",
+  "reason": "My net monthly profit is only 13 million Toman. 500,000 Toman is still too high a recurring fixed expense for my tiny shop.",
+  "objection": "Pricing tier too steep for micro boutique sales volume.",
+  "would_change_my_mind": "A micro tier at 190,000 Toman/mo.",
+  "price_too_cheap": 70000,
+  "price_cheap": 180000,
+  "price_expensive": 400000,
+  "price_too_expensive": 700000
+}

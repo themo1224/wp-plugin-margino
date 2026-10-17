@@ -1,0 +1,173 @@
+{
+ "business": "Margino (مارژینو - نرم‌افزار هوش رقبا و قیمت‌گذاری خودکار ووکامرس)",
+ "seed": 42,
+ "dealt": 20,
+ "answered": 20,
+ "skipped": [],
+ "buys": 13,
+ "passes": 7,
+ "buy_rate": 0.65,
+ "by_segment": [
+  [
+   "Established High-Volume Merchant (800+ SKUs, multi-channel)",
+   3,
+   1.0
+  ],
+  [
+   "Growing Shop (200-800 SKUs, 100-400 orders/mo)",
+   8,
+   0.75
+  ],
+  [
+   "Boutique / Solo Merchant (50-200 SKUs)",
+   9,
+   0.4444444444444444
+  ]
+ ],
+ "by_behaviour": [
+  [
+   "Torob rank-obsessed",
+   4,
+   1.0
+  ],
+  [
+   "Margin-conscious survivor",
+   5,
+   0.8
+  ],
+  [
+   "Overwhelmed operator",
+   3,
+   0.6666666666666666
+  ],
+  [
+   "Zhaket one-off plugin buyer",
+   4,
+   0.5
+  ],
+  [
+   "Tech-skeptical store owner",
+   2,
+   0.5
+  ],
+  [
+   "Wait-and-see follower",
+   2,
+   0.0
+  ]
+ ],
+ "by_income": [
+  [
+   "$580,609,000 and up",
+   7,
+   0.7142857142857143
+  ],
+  [
+   "$266,324,000 to $580,609,000",
+   7,
+   0.7142857142857143
+  ],
+  [
+   "under $266,324,000",
+   6,
+   0.5
+  ]
+ ],
+ "why_not": [
+  [
+   "price",
+   2,
+   [
+    "Even with cloud servers, I still hate recurring subscriptions when Zhaket has one-off tools. I might test the 7-day free trial, but I doubt I'll renew.",
+    "My net monthly profit is only 13 million Toman. 500,000 Toman is still too high a recurring fixed expense for my tiny shop."
+   ],
+   [
+    "P004",
+    "P017"
+   ]
+  ],
+  [
+   "habit",
+   2,
+   [
+    "My suppliers still quote prices through messy Telegram voice notes, so setting up base costs is still an obstacle for my shop.",
+    "At only 70 products, my assistant still manages manual checking just fine. 500k is a luxury for our scale."
+   ],
+   [
+    "P005",
+    "P013"
+   ]
+  ],
+  [
+   "trust",
+   2,
+   [
+    "The cloud architecture sounds great, but I still want to wait until I see peer reviews in our e-commerce community.",
+    "Looks promising, but I still want to wait until I see peer stores test it and share their feedback."
+   ],
+   [
+    "P010",
+    "P018"
+   ]
+  ],
+  [
+   "quality",
+   1,
+   [
+    "I still need an automated way to pull daily gold rates or Telegram supplier updates into the cost floor formula."
+   ],
+   [
+    "P020"
+   ]
+  ]
+ ],
+ "why_yes": [
+  [
+   "need",
+   7,
+   [
+    "Automatic Torob competitor detection without pasting links is worth every toman of the 500k Starter plan.",
+    "Preventing negative-margin sales during currency swings is worth far more than 980k a month."
+   ],
+   [
+    "P002",
+    "P007"
+   ]
+  ],
+  [
+   "convenience",
+   4,
+   [
+    "Cloud processing means my 800 SKUs won't bog down my server, and 7 days free lets me verify LiteSpeed compatibility on staging first.",
+    "Now that I know it auto-syncs from WooCommerce in 60 seconds with category rules instead of manual data entry, the 7-day trial is an immediate yes."
+   ],
+   [
+    "P001",
+    "P003"
+   ]
+  ],
+  [
+   "trust",
+   2,
+   [
+    "Explicit LiteSpeed and WP Rocket zero-load certification addresses my exact anxiety. The 30-day money-back guarantee removes all risk.",
+    "Having a safe manual-approval mode and circuit breaker limits solves my fear of bot repricing errors."
+   ],
+   [
+    "P006",
+    "P014"
+   ]
+  ]
+ ],
+ "flip": [
+  "A heavily discounted annual plan or lifetime license.",
+  "A direct Telegram price-list parser or helper.",
+  "Video walkthroughs and testimonials from recognizable store owners.",
+  "A mini tier for under 100 products at 200,000 Toman/mo.",
+  "A micro tier at 190,000 Toman/mo.",
+  "Real Iranian store case studies and before/after sales stats.",
+  "A direct gold/USD price multiplier feed for cost baselines."
+ ],
+ "purchases_first_month_per_buyer": 1.0,
+ "price_answers": 20
+}

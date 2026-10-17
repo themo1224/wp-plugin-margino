@@ -1,0 +1,13 @@
+{
+  "id": "P019",
+  "buys": true,
+  "purchases_first_month": 1,
+  "reason_code": "need",
+  "reason": "Automated Torob tracking that respects my silversmith costs without link pasting is an instant yes.",
+  "objection": "Double checking that silver weight variations match accurately.",
+  "would_change_my_mind": "",
+  "price_too_cheap": 100000,
+  "price_cheap": 300000,
+  "price_expensive": 700000,
+  "price_too_expensive": 1300000
+}

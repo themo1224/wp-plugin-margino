@@ -1,0 +1,7 @@
+# Margino (مارژینو)
+
+- **What it is:** A dynamic pricing intelligence and repricing SaaS that calculates an uncompromising cost floor and tracks live competitor prices across Iranian marketplaces (Torob, Snapp), ensuring buy-and-resell shops never sell below cost or lose sales due to uncompetitive pricing.
+- **Who it is for:** Iranian independent e-commerce merchants running WooCommerce stores in volatile, buy-and-resell categories (perfume, cosmetics, silver jewelry, mobile accessories, electronics) with 50 to 2,000 SKUs whose wholesale prices fluctuate with the US dollar and inflation.
+- **What it sells, at what price:** SaaS software subscription with three tiers: Starter (~300,000–500,000 Toman/mo, up to 100 SKUs, daily refresh), Pro (~800,000–1,500,000 Toman/mo, hero tier with auto-apply and 6-hour refresh for up to 1,000 SKUs), and Business (custom multi-store pricing).
+- **Where and how:** Online web application across Iran. Delivered via a standalone React seller panel web app and integrated via an ultra-lightweight WooCommerce connector plugin. Customers find it through Zhaket/RTL-Theme marketplaces, direct digital marketing, and targeted outreach to WooCommerce merchants.
+- **Budget and constraints:** Bootstrapped/lean team. Architecture already built across Laravel backend API, React SPA panel, and WordPress plugin. Key operational constraint: reliant on scraper pipelines for Iranian aggregators (Torob/Snapp) which are subject to anti-bot measures and schema changes.

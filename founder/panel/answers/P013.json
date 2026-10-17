@@ -1,0 +1,13 @@
+{
+  "id": "P013",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "At only 70 products, my assistant still manages manual checking just fine. 500k is a luxury for our scale.",
+  "objection": "Small catalog size makes manual checking viable.",
+  "would_change_my_mind": "A mini tier for under 100 products at 200,000 Toman/mo.",
+  "price_too_cheap": 80000,
+  "price_cheap": 200000,
+  "price_expensive": 450000,
+  "price_too_expensive": 800000
+}

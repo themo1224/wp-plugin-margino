@@ -1,0 +1,13 @@
+{
+  "id": "P005",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "habit",
+  "reason": "My suppliers still quote prices through messy Telegram voice notes, so setting up base costs is still an obstacle for my shop.",
+  "objection": "Unstructured supplier price communication in Telegram.",
+  "would_change_my_mind": "A direct Telegram price-list parser or helper.",
+  "price_too_cheap": 200000,
+  "price_cheap": 500000,
+  "price_expensive": 1000000,
+  "price_too_expensive": 2000000
+}

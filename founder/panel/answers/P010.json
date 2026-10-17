@@ -1,0 +1,13 @@
+{
+  "id": "P010",
+  "buys": false,
+  "purchases_first_month": 0,
+  "reason_code": "trust",
+  "reason": "The cloud architecture sounds great, but I still want to wait until I see peer reviews in our e-commerce community.",
+  "objection": "Lack of public case studies from known Iranian brands.",
+  "would_change_my_mind": "Video walkthroughs and testimonials from recognizable store owners.",
+  "price_too_cheap": 200000,
+  "price_cheap": 500000,
+  "price_expensive": 1000000,
+  "price_too_expensive": 1800000
+}
