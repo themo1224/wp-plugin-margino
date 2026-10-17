@@ -1,0 +1,7 @@
+What your scenario missed (vital product features):
+2: WooCommerce Sync-Back: Pushing the approved price back into the WordPress store. [DONE - Pull Cron + REST Push + Ack]
+3: Auto-Apply (Pro Plan): Automatically applying safe recommendations without manual clicking. [DONE - Evaluation Action + Circuit Breaker + Gating + Panel UI + Artisan Command]
+4: Alerts (SMS / Panel): Notifying the seller when selling at a loss or when a rival drops their price.
+5: Wrong Match Fix: Option to unlink or manually pick the correct Torob product if auto-match was wrong.
+6: "Refresh Now" Button: Force an instant Torob price check on demand.
+7: Price History / Audit Log: Tracking past price changes and who changed them.

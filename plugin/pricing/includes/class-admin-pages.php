@@ -346,13 +346,31 @@ class Pricing_Admin_Pages {
 		);
 		echo '</p>';
 
+		echo '<div class="pricing-admin__actions" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">';
 		echo '<form class="pricing-admin__form" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		echo '<input type="hidden" name="action" value="pricing_sync_products" />';
 		wp_nonce_field( Pricing_Product_Sync::NONCE_ACTION );
-		echo '<div class="pricing-admin__actions">';
-		echo '<button type="submit" class="button button-primary">' . esc_html__( 'همگام‌سازی محصولات', 'pricing' ) . '</button>';
-		echo '</div>';
+		echo '<button type="submit" class="button button-primary">' . esc_html__( 'همگام‌سازی محصولات به پنل', 'pricing' ) . '</button>';
 		echo '</form>';
+
+		echo '<form class="pricing-admin__form" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		echo '<input type="hidden" name="action" value="pricing_sync_back" />';
+		wp_nonce_field( Pricing_Price_Sync_Back::NONCE_ACTION );
+		echo '<button type="submit" class="button button-secondary">' . esc_html__( 'دریافت و اعمال قیمت‌های تأیید شده از پنل', 'pricing' ) . '</button>';
+		echo '</form>';
+		echo '</div>';
+
+		$last_sync_back = Pricing_Price_Sync_Back::get_last_sync_back();
+		if ( is_array( $last_sync_back ) && ! empty( $last_sync_back['last_run'] ) ) {
+			echo '<p class="description" style="margin-top: 8px;">';
+			printf(
+				/* translators: 1: last run time, 2: synced count */
+				esc_html__( 'آخرین دریافت قیمت‌ها از پنل: %1$s UTC — تعداد %2$d کالا در ووکامرس به‌روزرسانی شد.', 'pricing' ),
+				esc_html( (string) $last_sync_back['last_run'] ),
+				(int) $last_sync_back['synced']
+			);
+			echo '</p>';
+		}
 
 		if ( is_array( $last ) ) {
 			self::render_last_sync_summary( $last );
@@ -641,6 +659,20 @@ class Pricing_Admin_Pages {
 				} else {
 					$message = __( 'قیمت اعمال شد.', 'pricing' );
 				}
+				break;
+			case 'sync_back_success':
+				$class        = 'notice notice-success is-dismissible';
+				$synced_count = isset( $_GET['synced_count'] ) ? absint( wp_unslash( $_GET['synced_count'] ) ) : 0;
+				$message      = sprintf(
+					/* translators: %d: count of products */
+					__( 'قیمت‌های تأیید شده با موفقیت از پنل دریافت شد. تعداد %d محصول در ووکامرس به‌روزرسانی گردید.', 'pricing' ),
+					$synced_count
+				);
+				break;
+			case 'sync_back_error':
+				$class      = 'notice notice-error is-dismissible';
+				$error_code = isset( $_GET['error_code'] ) ? sanitize_key( wp_unslash( (string) $_GET['error_code'] ) ) : '';
+				$message    = sprintf( __( 'خطا در دریافت قیمت‌ها از پنل (%s).', 'pricing' ), $error_code );
 				break;
 			case 'error':
 				$class   = 'notice notice-error is-dismissible';
